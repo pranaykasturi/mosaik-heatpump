@@ -6,6 +6,12 @@ from tespy.components import (
 from tespy.connections import connection, ref
 from tespy.tools.characteristics import char_line
 from tespy.tools.characteristics import load_default_char as ldc
+from tespy.tools import logger
+import logging
+logger.define_logging(
+    log_path=True, log_version=True,
+    screen_level=logging.ERROR, file_level=logging.DEBUG
+)
 
 import numpy as np
 import pandas as pd
