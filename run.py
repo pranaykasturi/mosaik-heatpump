@@ -10,8 +10,11 @@ SIM_CONFIG = {
     'CSV': {
         'python': 'csvschedule_mosaik:CSVScheduleSimulator',
     },
+    'DB': {
+        'cmd': 'mosaik-hdf5 %(addr)s'
+    },
 }
-END = 366 * 15 * 60  # 366 days
+END = 50 * 15 * 60  # 12.5 Hours or 750 mins
 
 # Create World
 world = mosaik.World(SIM_CONFIG)
@@ -30,7 +33,7 @@ params = {'cd_cons_temp': 90,
           'ic_out_temp': 30
           }
 
-params1 = {'filename': 'HeatLoad.csv'}
+params1 = {'filename': 'HeatLoad1.csv'}
 
 # Instantiate models
 heatpump = heatpumpsim.HeatPump(params=params)
@@ -38,6 +41,12 @@ csvfile = csv.CSVSchedule(params=params1)
 
 # Connect entities
 world.connect(csvfile, heatpump, 'cons_Q')
+
+# Initializing and instantiating a database component:
+db = world.start('DB', step_size=15*60, duration=END)
+hdf5 = db.Database(filename='heat_pump_trial.hdf5')
+
+world.connect(heatpump, hdf5, 'cons_Q', 'amb_T', 'p_kw', 'COP')
 
 # Run simulation
 world.run(until=END)

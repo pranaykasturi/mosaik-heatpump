@@ -17,6 +17,10 @@ class Heat_Pump_State():
         """Power consumption of the Heat Pump in kW"""
         self.COP = None
         """COP of the Heat Pump"""
+        self.cons_Q = None
+        """The heat demand of the consumer in kW"""
+        self.amb_T = None
+        """The ambient temperature in °C"""
 
 class Heat_Pump_Inputs():
     """Inputs variables to the heat pump for each time step"""
@@ -92,5 +96,9 @@ class Heat_Pump():
         """
 
         step_inputs = {'amb_T': self.inputs.amb_T, 'cons_Q': self.inputs.cons_Q}
+
+        self.state.cons_Q = self.inputs.cons_Q
+
+        self.state.amb_T = self.inputs.amb_T
 
         self.state.p_kw, self.state.COP = self.design.Heat_Pump.step(step_inputs)
