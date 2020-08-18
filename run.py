@@ -36,15 +36,8 @@ params1 = {'filename': 'HeatLoad.csv'}
 heatpump = heatpumpsim.HeatPump(params=params)
 csvfile = csv.CSVSchedule(params=params1)
 
-# print(model)
-# print(monitor)
-
 # Connect entities
 world.connect(csvfile, heatpump, 'cons_Q')
-
-# # Create more entities
-# more_models = examplesim.ExampleModel.create(2, init_val=3)
-# mosaik.util.connect_many_to_one(world, more_models, monitor, 'val', 'delta')
 
 # Run simulation
 world.run(until=END)
