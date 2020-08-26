@@ -8,10 +8,9 @@ from tespy.tools.characteristics import char_line
 from tespy.tools.characteristics import load_default_char as ldc
 from tespy.tools import logger
 import logging
-logger.define_logging(
-    log_path=True, log_version=True,
-    screen_level=logging.ERROR, file_level=logging.DEBUG
-)
+logger.define_logging(log_path=True, log_version=True,
+                      screen_level=logging.ERROR,
+                      file_level=logging.DEBUG)
 
 import numpy as np
 import pandas as pd
@@ -30,11 +29,7 @@ class Heat_Pump_Des():
 
         self.design_hp()
 
-        self.P_cons = (self.nw.components['compressor 1'].P.val +
-                      self.nw.components['compressor 2'].P.val +
-                      self.nw.components['evaporator recirculation pump'].P.val +
-                      self.nw.components['pump'].P.val)
-        self.COP = params['cons_Q']/self.P_cons
+        self.p_cop_calc()
 
     def design_hp(self):
 
@@ -202,22 +197,27 @@ class Heat_Pump_Des():
         # nw.print_results()
         self.nw.save('heat_pump')
 
+    def p_cop_calc(self):
 
-
-    def step(self, inputs):
-        self.nw.connections['ambient air:out1_pump:in1'].set_attr(T=inputs['amb_T'])
-        self.nw.components['consumer'].set_attr(Q=-inputs['cons_Q'])
-        self.nw.solve('offdesign', design_path='heat_pump')
         self.P_cons = (self.nw.components['compressor 1'].P.val +
                        self.nw.components['compressor 2'].P.val +
                        self.nw.components['evaporator recirculation pump'].P.val +
                        self.nw.components['pump'].P.val)
-        self.COP = inputs['cons_Q']/self.P_cons
+        self.COP = self.cons_Q / self.P_cons
+
+    def step(self, inputs):
+
+        self.nw.connections['ambient air:out1_pump:in1'].set_attr(T=inputs['amb_T'])
+        self.nw.components['consumer'].set_attr(Q=-inputs['cons_Q'])
+        self.nw.solve('offdesign', design_path='heat_pump')
+
+        self.p_cop_calc()
 
         return self.P_cons, self.COP
 
 
 if __name__ == '__main__':
+
     params = {'cd_cons_temp': 90,
               'cb_dhp_temp': 60,
               'amb_p_temp': 12,
