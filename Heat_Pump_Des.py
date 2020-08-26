@@ -203,7 +203,7 @@ class Heat_Pump_Des():
                        self.nw.components['compressor 2'].P.val +
                        self.nw.components['evaporator recirculation pump'].P.val +
                        self.nw.components['pump'].P.val)
-        self.COP = self.cons_Q / self.P_cons
+        self.COP = -self.nw.components['consumer'].Q.val / self.P_cons
 
     def step(self, inputs):
 
