@@ -3,12 +3,14 @@ This module contains a simulation model of a Heat Pump based on the library TESP
 """
 
 # from ..model import Model
-from Heat_Pump import Heat_Pump_Des
+from Heat_Pump_Des import Heat_Pump_Des
+
 
 class Heat_Pump_Design():
     """Design of the Heat Pump based on the initial parameters"""
     def __init__(self, params):
         self.Heat_Pump = Heat_Pump_Des(params)
+
 
 class Heat_Pump_State():
     """Attributes that define the state of the Heat_Pump"""
@@ -21,6 +23,7 @@ class Heat_Pump_State():
         """The heat demand of the consumer in kW"""
         self.amb_T = None
         """The ambient temperature in °C"""
+
 
 class Heat_Pump_Inputs():
     """Inputs variables to the heat pump for each time step"""
@@ -35,6 +38,7 @@ class Heat_Pump_Inputs():
 
         self.step_size = None
         """step size in seconds"""
+
 
 class Heat_Pump():
     """
