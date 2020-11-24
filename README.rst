@@ -43,7 +43,7 @@ the parameter *heat_source* as *water*.
 For this model, the heat source is ambient air and the fluid on the consumer side is water. This model can be chosen by specifying
 the parameter *heat_source* as *air*.
 
-**Range of Operation of the models to be mentioned?**
+**Range of Operation of the models to be mentioned?**-
 
 Inputs
 
@@ -63,7 +63,6 @@ The heat pump model available in TESPy's library was modified and the new schema
 
 **Insert Image**
 
-**Breifly describe the changes made to the components**
 The consumer system and the expansion valve are unchanged. In the evaporator system, the superheater has been eliminated.
 The compressor system consists only of a single compression stage and intercooling is no longer required.
 
@@ -113,8 +112,6 @@ tools, e.g. CoolProp(fluid property database of TESPy)or FluProDia(https://flupr
 * Use starting values if necessary. Also, if you build up your model step by step you will see, where starting values are useful and where you can 
 skip on them.
 
-** design parameters - 'v' (constant part load pumping in comment') & 'T', do they impact the result? Are they the reason for divergent results for 
-high temp water & air heat pumps?**
 
 Getting help
 ------------
