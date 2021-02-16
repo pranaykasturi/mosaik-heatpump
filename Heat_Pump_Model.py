@@ -33,7 +33,7 @@ class Heat_Pump_Inputs():
         self.cons_Q = params['cons_Q']
         """The heat demand of the consumer in kW"""
 
-        self.amb_T = params['amb_p_temp']
+        self.amb_T = params['amb_in_apu_temp']
         """The ambient temperature in °C"""
 
         self.step_size = None
@@ -48,32 +48,21 @@ class Heat_Pump():
     required for the design of the heat pump. It will look like this::
 
         {
-            'cd_cons_temp': 90,
-            'cb_dhp_temp': 60,
-            'amb_p_temp': 12,
-            'amb_p_pres': 2,
-            'ev_amb_out_temp': 9,
-            'ev_amb_out_pres': 2,
-            'cons_q': 200e3,
-            'ic_out_temp': 30
+            'cd_cons_temp': 35,
+            'amb_in_apu_temp': 12,
+            'amb_in_apu_pres': 1,
+            'cons_q': 16700,
         }
 
     -*cd_cons_temp* is the temperature, in °C, at which the consumer is supplied heat.
 
-    -*cd_dhp_temp*  is the temperature, in °C, at which the consumer returns the heating
-    fluid to the condenser.
+    -*amb_in_apu_temp* is the temperature, in °C, and *amb_in_apu_pres* is the pressure, in bar, at
+    which the ambient fluid (water or air) is available as the heat source.
 
-    -*amb_p_temp* is the temperature, in °C, and *amb_p_pres* is the pressure, in bar, at
-     which the ambient fluid (water or air) is available as the heat source.
+    -*ev_amb_out_temp* is the temperature, in °C, at which the ambient fluid (water or air) is released
+    back to the ambient.
 
-    -*ev_amb_out_temp* is the temperature, in °C, and *ev_amb_out_pres* is the pressure,
-    in bar, at which the ambient fluid (water or air) is available released back to the
-    ambient.
-
-    -*cons_q* is the consumer heat demand, in kW, in the design case.
-
-    -*ic_out_temp* is the temperature, in °C, at which the ambient fluid is released back
-    to the ambient from the intercooler of the compressor.
+    -*cons_q* is the consumer heat demand, in W, in the design case.
     """
 
     __slots__ = ['design', 'state', 'inputs']
