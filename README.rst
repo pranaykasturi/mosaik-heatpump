@@ -1,9 +1,6 @@
 mosaik-heatpump
 ===============
 
-Introduction
-------------
-
 This package contains an an adapter to connect a heat pump model, based
 on the `TESPy <https://github.com/oemof/tespy>`_ library, to *mosaik*.
 
@@ -57,6 +54,9 @@ The model gives the following outputs for each time step:
 1) Coefficient of Performance (COP) of the heat pump
 2) Power requirement (W) of the heat pump
 
+Usage in mosaik
+"""""""""""""""
+
 Advanced
 """"""""
 The heat pump model available in TESPy's library was modified and the new schematic of the system is shown below.
@@ -74,7 +74,7 @@ datasheets.
 (` Model  ERLQ016CAV3 <https://www.daikin.eu/en_us/products/EHBH-CB---ERLQ-CV3.table.html>`_).
 
 
-*Componet Parametrization*
+*Component Parametrization*
 The parametrization of the components of the system was only slightly modified when compared to the tutorial.
 In the consumer system, for the water/water heat pump, the parameter 'ttd_u' wasn't specified for the condenser as an additional parameter in
 the evaporator system was available from the datasheet. However, for the air/water heat pump, such data was not available and therefore the 'ttd_u'
