@@ -8,16 +8,16 @@ SIM_CONFIG = {
         'python': 'Heat_Pump_mosaik:HeatPumpSimulator',
     },
     'CSV': {
-        'python': 'mosaik_csv:CSV',
+        'python': 'mosaik_csv_2:CSV',
     },
     'DB': {
         'cmd': 'mosaik-hdf5 %(addr)s'
     },
 }
 
-START = '2016-01-01 00:00:00'
+START = '01.01.2016 00:00'
 END = 10 * 15 * 60  # 2.5 Hours or 150 mins
-HEAT_LOAD_DATA = 'Heatload3.csv'
+HEAT_LOAD_DATA = 'Heatload6.csv'
 date_format = 'DD.MM.YYYY HH:mm'
 
 # Create World
@@ -25,7 +25,7 @@ world = mosaik.World(SIM_CONFIG)
 
 # Start simulators
 heatpumpsim = world.start('HeatPumpSim', step_size=15*60)
-csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA)
+csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA, date_format=date_format)
 # csv = world.start('CSV', step_size=15*60)
 
 params = {'heat_source': 'Water',
