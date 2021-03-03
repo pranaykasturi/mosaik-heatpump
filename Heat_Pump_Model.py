@@ -21,20 +21,32 @@ class Heat_Pump_State():
         """COP of the Heat Pump"""
         self.cons_Q = None
         """The heat demand of the consumer in kW"""
+        self.heat_source = None
+        """The temperature of the heat source (in °C)"""
+        self.heat_source_T = None
+        """The temperature of the heat source (in °C)"""
+        self.cons_T = None
+        """The temperature at which heat is supplied to the consumer (in °C)"""
         self.amb_T = None
-        """The ambient temperature in °C"""
 
 
 class Heat_Pump_Inputs():
     """Inputs variables to the heat pump for each time step"""
-    __slots__ = ['cons_Q', 'amb_T', 'step_size']
+    __slots__ = ['cons_Q', 'heat_source', 'heat_source_T', 'cons_T', 'step_size', 'amb_T']
 
     def __init__(self, params):
-        self.cons_Q = params['cons_Q']
-        """The heat demand of the consumer in kW"""
+        self.cons_Q = params.get('cons_Q')
 
-        self.amb_T = params['amb_in_apu_temp']
-        """The ambient temperature in °C"""
+        self.heat_source = params.get('heat_source')
+        """The source of heat ('water' or 'air')"""
+
+        self.heat_source_T = params.get('heat_source_T')
+        """The temperature of the heat source (in °C)"""
+
+        self.cons_T = params.get('cons_T')
+        """The temperature at which heat is supplied to the consumer (in °C)"""
+
+        self.amb_T = params.get('amb_T')
 
         self.step_size = None
         """step size in seconds"""
@@ -44,25 +56,22 @@ class Heat_Pump():
     """
     Simulation model of a heat pump based on the library TESPy.
 
-    You have to provide the *params* dictionary that contains all the parameters
+    You have to provide the *params* dictionary that contains the parameters
     required for the design of the heat pump. It will look like this::
 
         {
-            'cd_cons_temp': 35,
-            'amb_in_apu_temp': 12,
-            'amb_in_apu_pres': 1,
-            'cons_q': 16700,
+            'cons_T': 35,
+            'heat_source_T': 12,
+            'heat_source': 'water' or 'air'
         }
 
-    -*cd_cons_temp* is the temperature, in °C, at which the consumer is supplied heat.
+    -*cons_T* is the temperature, in °C, at which heat is supplied to the consumer.
 
-    -*amb_in_apu_temp* is the temperature, in °C, and *amb_in_apu_pres* is the pressure, in bar, at
-    which the ambient fluid (water or air) is available as the heat source.
+    -*heat_source_T* is the temperature, in °C, at which the ambient fluid (water or air)
+    is available as the heat source.
 
-    -*ev_amb_out_temp* is the temperature, in °C, at which the ambient fluid (water or air) is released
-    back to the ambient.
-
-    -*cons_q* is the consumer heat demand, in W, in the design case.
+    -*heat_source* is the fluid, either 'water' or 'air', that acts as the heat source for
+    the system.
     """
 
     __slots__ = ['design', 'state', 'inputs']
@@ -88,9 +97,17 @@ class Heat_Pump():
 
         """
 
-        step_inputs = {'amb_T': self.inputs.amb_T, 'cons_Q': self.inputs.cons_Q}
+        step_inputs = {'heat_source_T': self.inputs.heat_source_T,
+                       'cons_Q': self.inputs.cons_Q,
+                       'cons_T': self.inputs.cons_T,
+                       'amb_T': self.inputs.amb_T
+                       }
 
         self.state.cons_Q = self.inputs.cons_Q
+
+        self.state.heat_source_T = self.inputs.heat_source_T
+
+        self.state.cons_T = self.inputs.cons_T
 
         self.state.amb_T = self.inputs.amb_T
 

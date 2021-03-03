@@ -28,10 +28,10 @@ heatpumpsim = world.start('HeatPumpSim', step_size=15*60)
 csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA, date_format=date_format)
 # csv = world.start('CSV', step_size=15*60)
 
-params = {'cd_cons_temp': 35,
-          'amb_in_apu_pres': 1,
-          'amb_in_apu_temp': 12,
-          'cons_Q': 16700,
+params = {'heat_source': 'Water',
+          'cons_T': 35,
+          'heat_source_T': 5,
+          'amb_T': 15
           }
 
 # Instantiate models

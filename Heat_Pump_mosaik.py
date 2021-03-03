@@ -6,7 +6,7 @@ META = {
         'HeatPump': {
             'public': True,
             'params': ['params'],
-            'attrs': ['cons_Q', 'amb_T', 'p_kw', 'COP'],
+            'attrs': ['cons_Q', 'heat_source_T', 'heat_source', 'cons_T', 'p_kw', 'COP', 'amb_T'],
         },
     },
 }
