@@ -8,7 +8,7 @@ SIM_CONFIG = {
         'python': 'Heat_Pump_mosaik:HeatPumpSimulator',
     },
     'CSV': {
-        'python': 'mosaik_csv_2:CSV',
+        'python': 'mosaik_csv_3:CSV',
     },
     'DB': {
         'cmd': 'mosaik-hdf5 %(addr)s'
@@ -43,7 +43,7 @@ world.connect(heat_load, heatpump, 'cons_Q', 'amb_T')
 
 # Initializing and instantiating a database component:
 db = world.start('DB', step_size=15*60, duration=END)
-hdf5 = db.Database(filename='heat_pump_newcsv.hdf5')
+hdf5 = db.Database(filename='heat_pump_csv3.hdf5')
 
 world.connect(heatpump, hdf5, 'cons_Q', 'amb_T', 'p_kw', 'COP')
 
