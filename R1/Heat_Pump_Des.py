@@ -48,6 +48,8 @@ class Heat_Pump_Des():
         # Calculating the Power & COP of the heat pump
         self.p_cop_calc()
 
+
+
     def take_closest(self, myList, myNumber):
         """
         Assumes myList is sorted. Returns closest value to myNumber.
@@ -243,20 +245,6 @@ class Heat_Pump_Des():
         # # nw.print_results()
         self.nw.save('heat_pump')
 
-        # %% Calculation of the off-design condition for the timestep
-
-        # if self.heat_source.lower() == 'air':
-        self.nw.connections['source ambient:out1_ambient pump:in1'].set_attr(T=self.heat_source_T)
-
-        self.LWE = self.heat_source_T - 5
-        self.nw.connections['evaporator:out1_sink ambient:in1'].set_attr(T=self.LWE)
-
-        self.nw.connections['condenser:out2_consumer:in1'].set_attr(T=self.cons_T)
-
-        self.nw.components['consumer'].set_attr(Q=-self.cons_Q)
-
-        self.nw.solve('offdesign', design_path='heat_pump')
-
     def p_cop_calc(self):
 
         self.P_cons = (self.nw.components['compressor'].P.val +
@@ -285,13 +273,13 @@ class Heat_Pump_Des():
 
         if id_old != self.idx:
             self.design_hp()
-        else:
-            self.nw.connections['source ambient:out1_ambient pump:in1'].set_attr(T=self.heat_source_T)
-            self.nw.connections['condenser:out2_consumer:in1'].set_attr(T=self.cons_T)
-            self.LWE = self.heat_source_T - 5
-            self.nw.connections['evaporator:out1_sink ambient:in1'].set_attr(T=self.LWE)
-            self.nw.components['consumer'].set_attr(Q=-self.cons_Q)
-            self.nw.solve('offdesign', design_path='heat_pump')
+
+        self.nw.connections['source ambient:out1_ambient pump:in1'].set_attr(T=self.heat_source_T)
+        self.nw.connections['condenser:out2_consumer:in1'].set_attr(T=self.cons_T)
+        self.LWE = self.heat_source_T - 5
+        self.nw.connections['evaporator:out1_sink ambient:in1'].set_attr(T=self.LWE)
+        self.nw.components['consumer'].set_attr(Q=-self.cons_Q)
+        self.nw.solve('offdesign', design_path='heat_pump')
 
         self.p_cop_calc()
 
@@ -306,28 +294,11 @@ if __name__ == '__main__':
         'heat_source_T': 12,
         'cons_T': 35,
     }
-
     heat_pump_1 = Heat_Pump_Des(params)
-    #
     print('P : ', heat_pump_1.P_cons)
     print('COP : ', heat_pump_1.COP)
-    #
+
     inputs = {'heat_source_T': 9, 'cons_Q': 15900, 'cons_T': 30}
-    # inputs = {'amb_T': 13.7, 'cons_Q': 3845.051}
-    # #
     heat_pump_1.step(inputs)
     print('P : ', heat_pump_1.P_cons)
     print('COP : ', heat_pump_1.COP)
-
-    # heat_source_2 = 'air'
-    # heat_pump_2 = Heat_Pump_Des(heat_source_2)
-    #
-    # print('P : ', heat_pump_2.P_cons)
-    # print('COP : ', heat_pump_2.COP)
-    # heat_pump_1.nw.print_results()
-
-    # inputs = {'amb_T': 6, 'cons_Q': 14500}
-    #
-    # heat_pump_2.step(inputs)
-    # print('P : ', heat_pump_2.P_cons)
-    # print('COP : ', heat_pump_2.COP)
