@@ -1,0 +1,5 @@
+arrow==1.0.3
+mosaik==2.6.0
+mosaik-hdf5==0.3
+TESPy==0.4.2.post2
+
