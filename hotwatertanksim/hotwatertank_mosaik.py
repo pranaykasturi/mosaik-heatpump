@@ -10,9 +10,9 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
     def __init__(self):
         # dummy metadata, actual metadata is set in init()
         meta = {
-                'api_version': 2.4,
+                'type': 'time_based',
                 'models': {},
-                'extra_methods': []
+                'extra_methods': ['add_async_request']
                 }
         super().__init__(meta)
         self.models = dict()
@@ -22,7 +22,11 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
         self.async_requests = dict()
         self.i=0
 
-    def init(self, sid, step_size, config):
+    def init(self, sid, time_resolution, step_size, config):
+        self.time_resolution = float(time_resolution)
+        if self.time_resolution != 1.0:
+            print('WARNING: %s got a time_resolution other than 1.0, which \
+                can not be handled by this simulator.', sid)
         self.sid = sid  # simulator id
         self.step_size = step_size
         attrs = ['_', 'snapshot', 'sh_supply', 'sh_demand', 'dhw_demand', 'dhw_supply', 'hp_demand', 'T_env', 'T_mean']
@@ -44,19 +48,11 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
                 attrs.append('%s.P_th' % heating_rod)
                 attrs.append('%s.P_th_min' % heating_rod)
                 attrs.append('%s.P_th_max' % heating_rod)
-        self.meta = {
-                'api_version': 2.4,
-                'models': {
-                    'HotWaterTank': {
-                        'public': True,
-                        'params': ['params', 'init_vals', 'snapshot'],
-                        'attrs': attrs
-                        },
-                    },
-                'extra_methods': [
-                    'add_async_request'
-                    ]
-                }
+        self.meta['models']['HotWaterTank'] = {
+            'public': True,
+            'params': ['params', 'init_vals', 'snapshot'],
+            'attrs': attrs
+        }
             
         return self.meta
     
@@ -85,7 +81,7 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
         #print('async_reqs: %s' % self.async_requests)
 
 
-    def step(self, time, inputs):
+    def step(self, time, inputs, max_advance):
 
         # print('hwt inputs: %s' % inputs)
         for eid, attrs in inputs.items():

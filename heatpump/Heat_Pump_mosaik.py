@@ -3,6 +3,7 @@ import multiprocessing as mp
 from Heat_Pump_Model import Heat_Pump
 
 META = {
+    'type': 'time-based',
     'models': {
         'HeatPump': {
             'public': True,
@@ -16,6 +17,7 @@ META = {
 class HeatPumpSimulator(mosaik_api.Simulator):
     def __init__(self):
         super().__init__(META)
+        self.time_resolution = None
         self.models = dict()  # contains the model instances
         self.sid = None
         self.eid_prefix = 'HeatPump_'
@@ -25,7 +27,11 @@ class HeatPumpSimulator(mosaik_api.Simulator):
         self.processes = 1
         # start time of simulation as UTC ISO 8601 time string
 
-    def init(self, sid, step_size):
+    def init(self, sid, time_resolution, step_size):
+        self.time_resolution = float(time_resolution)
+        if self.time_resolution != 1.0:
+            print('WARNING: %s got a time_resolution other than 1.0, which \
+                can not be handled by this simulator.', sid)
         self.sid = sid # simulator id
         self.step_size = step_size
         return self.meta
@@ -46,7 +52,7 @@ class HeatPumpSimulator(mosaik_api.Simulator):
             entities.append({'eid': eid, 'type': model})
         return entities
 
-    def step(self, time, inputs):
+    def step(self, time, inputs, max_advance):
         # print('heatpump inputs: %s' % inputs)
         for eid, attrs in inputs.items():
             for attr, src_ids in attrs.items():

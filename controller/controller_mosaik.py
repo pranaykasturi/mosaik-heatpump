@@ -2,7 +2,7 @@ import mosaik_api
 from controller import Controller
 
 META = {
-    'api_version': 2.4,
+    'type': 'time-based',
     'models': {
         'Controller': {
             'public': True,
@@ -21,24 +21,21 @@ META = {
 
 class ControllerSimulator(mosaik_api.Simulator):
     def __init__(self):
-        meta = {
-            'api_version': 2.4,
-            'models': {},
-            'extra_methods': []
-        }
-        super().__init__(meta)
+        super().__init__(META)
 
-        # super().__init__(META)
         self.models = dict()  # contains the model instances
         self.sid = None
         self.eid_prefix = 'Controller_'
         self.step_size = None
         self.async_requests = dict()
 
-    def init(self, sid, step_size):
+    def init(self, sid, time_resolution, step_size):
+        self.time_resolution = float(time_resolution)
+        if self.time_resolution != 1.0:
+            print('WARNING: %s got a time_resolution other than 1.0, which \
+                can not be handled by this simulator.', sid)
         self.sid = sid # simulator id
         self.step_size = step_size
-        self.meta = META
         return self.meta
 
     def create(self, num, model, params=None):
@@ -63,7 +60,7 @@ class ControllerSimulator(mosaik_api.Simulator):
             src_attr, dest_attr = attr_pair
             self.async_requests[src_id][dest_id].update({src_attr: dest_attr})
 
-    def step(self, time, inputs):
+    def step(self, time, inputs, max_advance):
         # print('controller inputs: %s' % inputs)
         for eid, attrs in inputs.items():
             # print(eid, attrs)
