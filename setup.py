@@ -1,15 +1,9 @@
 from setuptools import setup, find_packages
 import os
 
-find_version='0.1.0'
-if os.environ.get('CI_COMMIT_TAG'):
-    find_version = os.environ['CI_COMMIT_TAG']
-
-
-
 setup(
     name='mosaik-heatpump',
-    version=find_version,
+    version='0.1.0',
     author='Pranay Kasturi',
     author_email='mosaik@offis.de',
     description='Mosaik-heatpump provides a model of a residential heatpump system',
@@ -18,13 +12,10 @@ setup(
                       open('AUTHORS.txt', encoding='utf-8').read()),
     url='https://mosaik.offis.de',
     install_requires=[
-        'networkx>=2.5',
         'mosaik-api>=3.0',
         'tespy>=0.4.2',
     ],
-
     packages=find_packages(exclude=['tests*']),
-    py_modules=['mosaik_heatpump'],
     include_package_data=True,
     entry_points={
         'console_scripts': [

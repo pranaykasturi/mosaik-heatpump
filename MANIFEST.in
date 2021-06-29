@@ -1,0 +1,3 @@
+include *.cfg
+include *.ini
+include *.txt
