@@ -1,0 +1,6 @@
+Authors
+=======
+
+The mosaik-heatpump package was developed by Pranay Kasturi
+
+Additional Contributors: Jan Soeren Schwarz
