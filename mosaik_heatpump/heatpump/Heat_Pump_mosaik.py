@@ -1,6 +1,8 @@
 import mosaik_api
 import multiprocessing as mp
-from heatpump.Heat_Pump_Model import Heat_Pump
+import json
+import os
+from Heat_Pump_Model import Heat_Pump
 
 META = {
     'type': 'time-based',
@@ -13,6 +15,8 @@ META = {
         },
     },
 }
+
+JSON_COP_DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), 'COP_m_data.json'))
 
 class HeatPumpSimulator(mosaik_api.Simulator):
     def __init__(self):
@@ -45,10 +49,15 @@ class HeatPumpSimulator(mosaik_api.Simulator):
             if num < self.processes:
                 self.processes = num
 
+        COP_m_data = None
+        if params['calc_mode'] == 'fast' or params['calc_mode'] == 'fixed':
+            with open(JSON_COP_DATA, "r") as read_file_1:
+                COP_m_data = json.load(read_file_1)
+
         next_eid = len(self.models)
         for i in range(next_eid, next_eid + num):
             eid = '%s%d' % (self.eid_prefix, i)
-            self.models[eid] = Heat_Pump(params)
+            self.models[eid] = Heat_Pump(params, COP_m_data)
             entities.append({'eid': eid, 'type': model})
         return entities
 

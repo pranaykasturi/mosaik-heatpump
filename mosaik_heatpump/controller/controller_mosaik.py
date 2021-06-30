@@ -9,7 +9,7 @@ META = {
             'params': ['params'],
             'attrs': ['_', 'outside_temperature', 'hp_demand', 'heat_supply', 'heat_demand', 'sh_demand', 'sh_supply',
                       'dhw_demand', 'dhw_supply', 'sh_in_F', 'sh_in_T', 'sh_out_F', 'dhw_in_F', 'dhw_in_T', 'dhw_out_F',
-                      'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T', 'hwt_snapshot', 'T_mean'],
+                      'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T', 'hwt_connections', 'T_mean', 'hwt_mass'],
             # 'attrs': ['outside_temperature', 'sh_demand', 'sh_supply', 'dhw_demand', 'dhw_supply', 'hp_demand'],
         },
     },
@@ -99,3 +99,8 @@ class ControllerSimulator(mosaik_api.Simulator):
                 data[eid][attr] = getattr(self.models[eid], attr)
         return data
 
+def main():
+    return mosaik_api.start_simulation(ControllerSimulator())
+
+if __name__ == '__main__':
+    main()

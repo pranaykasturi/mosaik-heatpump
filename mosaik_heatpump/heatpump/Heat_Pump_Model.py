@@ -8,8 +8,8 @@ from Heat_Pump_Des import Heat_Pump_Des
 
 class Heat_Pump_Design():
     """Design of the Heat Pump based on the initial parameters"""
-    def __init__(self, params):
-        self.Heat_Pump = Heat_Pump_Des(params)
+    def __init__(self, params, COP_m_data):
+        self.Heat_Pump = Heat_Pump_Des(params, COP_m_data)
 
 
 class Heat_Pump_State():
@@ -86,8 +86,8 @@ class Heat_Pump():
 
     __slots__ = ['design', 'state', 'inputs']
 
-    def __init__(self, params):
-        self.design = Heat_Pump_Design(params)
+    def __init__(self, params, COP_m_data):
+        self.design = Heat_Pump_Design(params, COP_m_data)
         """stores the design of the heat pump in a
         :class:`.Heat_Pump_Model.Heat_Pump_Design` object"""
         self.state = Heat_Pump_State()

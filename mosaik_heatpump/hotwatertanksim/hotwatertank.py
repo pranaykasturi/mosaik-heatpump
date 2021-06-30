@@ -399,7 +399,7 @@ class HotWaterTank():
     @property
     def snapshot(self):
         """serialize to json"""
-        return jsonpickle.encode(self)
+        return jsonpickle.encode(self.connections)
 
     @property
     def T_layers(self):
