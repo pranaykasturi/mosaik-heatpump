@@ -1,4 +1,4 @@
-from hotwatertanksim.hotwatertank import HotWaterTank
+from mosaik_heatpump.hotwatertanksim.hotwatertank import HotWaterTank
 import numpy as np
 import jsonpickle
 import pytest
