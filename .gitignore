@@ -4,3 +4,7 @@
 /.idea
 /build
 /dist
+/.cache
+/.tox
+__pycache__
+
