@@ -1,4 +1,4 @@
-from pysimmods.hotwatertanksim.hotwatertank import HotWaterTank
+from hotwatertanksim.hotwatertank import HotWaterTank
 import numpy as np
 import jsonpickle
 import pytest

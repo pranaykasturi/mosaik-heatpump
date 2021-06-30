@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
 
 """
@@ -526,7 +528,8 @@ class Connection(object):
     def __init__(self, params, layers):
         self.layers = layers  # reference to layers
         self.pos = params['pos']
-        self.type = params['type']
+        if 'type' in params:
+            self.type = params['type']
         self._F = 0  # flow [l/s]
         self._T = None  # °C
         self._T_buffer = []  # °C
