@@ -1,0 +1,3 @@
+include CHANGES.txt
+include mosaik_heatpump/heatpump/COP_m_data.json
+include mosaik_heatpump/heatpump/data_file.json

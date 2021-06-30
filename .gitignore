@@ -1,0 +1,10 @@
+/venv
+/mosaik_heatpump.egg-info
+/tmp
+/.idea
+/build
+/dist
+/.cache
+/.tox
+__pycache__
+

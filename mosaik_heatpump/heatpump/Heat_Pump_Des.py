@@ -9,21 +9,25 @@ from tespy.tools.characteristics import load_default_char as ldc
 from tespy.tools import logger
 from bisect import bisect_left
 import json
+import os
 import logging
-logger.define_logging(log_path=True, log_version=True,
-                      screen_level=logging.ERROR,
-                      file_level=logging.DEBUG)
+# logging.basicConfig(level=logging.ERROR)
+# logger.define_logging(log_path=True, log_version=True,
+#                       screen_level=logging.ERROR,
+#                       file_level=logging.DEBUG)
+JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data_file.json'))
 
 
 class Heat_Pump_Des():
 
-    def __init__(self, params):
+    def __init__(self, params, COP_m_data):
 
         self.Q_Demand = params.get('Q_Demand')
 
         self.cons_T = params.get('cons_T', None)
 
-        self.cond_in_T = self.cons_T - 5
+        self.cond_in_T = params.get('cond_in_T')
+        # self.cond_in_T = self.cons_T - 5
 
         self.heat_source = params['heat_source']
 
@@ -50,9 +54,7 @@ class Heat_Pump_Des():
 
         self.calc_mode = params.get('calc_mode')
 
-        if self.calc_mode == 'fast':
-            with open("COP_m_data.json", "r") as read_file_1:
-                self.COP_m_data = json.load(read_file_1)
+        self.COP_m_data = COP_m_data
 
 
 
@@ -73,10 +75,8 @@ class Heat_Pump_Des():
         else:
             return before
 
-
     def _etas_heatload_id(self):
-
-        with open("data_file.json", "r") as read_file_1:
+        with open(JSON_DATA_FILE, "r") as read_file_1:
             data_1 = json.load(read_file_1)
 
         etas_dict = data_1['etas_list'][self.heat_source]
@@ -307,7 +307,11 @@ class Heat_Pump_Des():
 
         id_old = self.idx
 
-        self._etas_heatload_id()
+        if self.calc_mode == 'fixed':
+            self.heatload_min = 5000
+            self.heatload_max = 11040
+        else:
+            self._etas_heatload_id()
 
         if self.Q_Demand < self.heatload_min:
             self.skip_step = True
@@ -337,6 +341,13 @@ class Heat_Pump_Des():
                     self.P_cons = self.Q_Supplied/self.COP
                 else:
                     self.step_error()
+
+            elif self.calc_mode == 'fixed':
+
+                self.cond_m = 0.52
+                self.COP = 2
+                self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
+                self.P_cons = self.Q_Supplied/self.COP
 
             elif self.calc_mode == 'detailed':
 
@@ -380,12 +391,12 @@ if __name__ == '__main__':
         'heat_source': 'air',
         'heat_source_T': 7,
         'cons_T': 35,
-        'calc_mode': 'fast'
+        'calc_mode': 'detailed'
     }
 
-    heat_pump_1 = Heat_Pump_Des(params_air)
+    heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
-    inputs_air_1 = {'heat_source_T': -20, 'Q_Demand': 5000, 'cond_in_T': 25}
+    inputs_air_1 = {'heat_source_T': 2, 'Q_Demand': 11040, 'cond_in_T': 45}
 
     heat_pump_1.step(inputs_air_1)
 

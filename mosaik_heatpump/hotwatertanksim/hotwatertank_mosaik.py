@@ -4,7 +4,7 @@ Mosaik interface for hot water tank
 """
 import mosaik_api
 import jsonpickle
-from hotwatertank import HotWaterTank
+from mosaik_heatpump.hotwatertanksim.hotwatertank import HotWaterTank
 
 class HotWaterTankSimulator(mosaik_api.Simulator):
     def __init__(self):
@@ -29,7 +29,7 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
                 can not be handled by this simulator.', sid)
         self.sid = sid  # simulator id
         self.step_size = step_size
-        attrs = ['_', 'snapshot', 'sh_supply', 'sh_demand', 'dhw_demand', 'dhw_supply', 'hp_demand', 'T_env', 'T_mean']
+        attrs = ['_', 'snapshot', 'sh_supply', 'sh_demand', 'dhw_demand', 'dhw_supply', 'hp_demand', 'T_env', 'T_mean', 'mass']
         if 'n_sensors' in config:
             for i in range(config['n_sensors']):
                 attrs.append('sensor_%02d.T' % i)
