@@ -18,6 +18,9 @@ You can install mosaik-heatpump with pip:
 
 .. code-block:: bash
 
+      pip install mosaik-heatpump
+
+
 You can run the tests with:
 
 .. code-block:: bash
@@ -28,7 +31,7 @@ Heat Pump Model
 TESPy
 ^^^^^
 TESPy (Thermal Engineering Systems in Python) provides a powerful simulation package for thermal processes 
-like power plants, district heating systems, heat pumps etc. For more information about the library, please 
+like power plants, district heating systems, heat pumps etc. For more information about the library, we 
 refer to its `documentation <https://tespy.readthedocs.io/en/master/>`_. The heat pump model provided in this package is based on the model used in TESPy's 
 `heat pump tutorial <https://tespy.readthedocs.io/en/master/tutorials_examples.html#heat-pump-tutorial>`_.
 
@@ -36,12 +39,9 @@ Basic Functionality of the Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With the model, the following two types of heat pumps can be simulated:
-1) Water/Water Heat Pump-
-For this type, the heat source is underground water and the fluid on the consumer side is also water. This model can be chosen by specifying
-the parameter *heat_source* as *water*.
-2) Air/Water Heat Pump: 
-For this type, the heat source is ambient air and the fluid on the consumer side is water. This model can be chosen by specifying
-the parameter *heat_source* as *air*.
+
+1) Water/Water Heat Pump: For this type, the heat source is underground water and the fluid on the consumer side is also water. This model can be chosen by specifying the parameter *heat_source* as *water*.
+2) Air/Water Heat Pump: For this type, the heat source is ambient air and the fluid on the consumer side is water. This model can be chosen by specifying the parameter *heat_source* as *air*.
 
 Moreover, the model offers two modes of calculation. A *detailed* mode where the system calculations for a set of inputs are actually performed by the 
 model. In addition, there is a *fast* mode, in which pre-calculated data from the *detailed* mode is used to compute the outputs instead of actually 
@@ -89,18 +89,17 @@ The consumer system and the expansion valve are unchanged. In the evaporator sys
 The compressor system consists only of a single compression stage and intercooling is no longer required.
 
 Following the tutorial, the parametrization for the heat pump models provided in this package has been done to match the power requirement
-calculated by the model to that given in the manufacturer's datasheets for a range of heat loads.
-1) Water/Water Heat Pump- This model is based on Daikin's Water/Water Heat Pump 
-(`Model EWWP014KBW1N <https://www.daikin.eu/en_us/products/EWWP-KBW1N.table.html>`_).
-2) Air/Water Heat Pump- This model is based on Daikin's Air/Water Heat Pump 
-(`Model  ERLQ016CAV3 <https://www.daikin.eu/en_us/products/EHBH-CB---ERLQ-CV3.table.html>`_).
+calculated by the model to that given in the manufacturer's datasheets for a range of heat loads:
 
-Prametrization of the model
-"""""""""""""""""""""""""""
+1) Water/Water Heat Pump: This model is based on Daikin's Water/Water Heat Pump (`Model EWWP014KBW1N <https://www.daikin.eu/en_us/products/EWWP-KBW1N.table.html>`_).
+2) Air/Water Heat Pump: This model is based on Daikin's Air/Water Heat Pump (`Model  ERLQ016CAV3 <https://www.daikin.eu/en_us/products/EHBH-CB---ERLQ-CV3.table.html>`_).
+
+Parametrization of the model
+""""""""""""""""""""""""""""
 
 *Component Parametrization*
 
-The parametrization of the components of the system was only slightly modified when compared to the tutorial.
+The parametrization of the components of the system was only slightly modified compared to the tutorial.
 In the consumer system, for both types of heat pumps, the 'ttd_u' of the condenser was adjusted. 
 In the evaporator system, the same parametrization as in the tutorials is used, with only the 'ttd_l' of the evaporator modified.
 The parametrization of the newly added ambient pump is the same as that of the other pumps in the tutorial.
@@ -108,8 +107,7 @@ The parametrization of the newly added ambient pump is the same as that of the o
 For the compressor, all the parameters except 'eta_s' are same as those used in the tutorial. For the set of design points, i.e the evaporator side
 temperatures, the condenser side temperatures and the heating capacities available from the manufacturer's datasheet, the 'eta_s' parameter of the 
 of the compressor has been chosen to match the compressor power calculated by the model to that provided in the datasheet. A script to generate the
-series of 'eta_s' values for the different design points, has been provided in the package. The steps to be followed to utilize this script have been
-deatiled below.
+series of 'eta_s' values for the different design points, are provided in the package. The steps to be followed to utilize this script are detailed below.
 
 *Connection Parametrization*
 
@@ -128,16 +126,17 @@ incorrect results or even errors in some cases.
 *Off-design calculation*
 
 For the off-design calculations, the default characteristic lines provided by TESPy for the components (condenser, evaporator, pumps, compressor)
-were used. However, it is possible to use other charactersitic line/maps through TESPy. Please refer to TESPy's documentation for further details
+were used. However, it is possible to use other charactersitic line/maps through TESPy. We refer to TESPy's documentation for further details
 on this.
 
 *Advice for other models of heat pumps*
 
-* Always have a look at a fluid proprety diagram when checking different refrigerants to find appropriate starting values. There are various
-tools, e.g. CoolProp(fluid property database of TESPy)or FluProDia(https://fluprodia.readthedocs.io/).
+In addition to the two heat pump models, which are described by a parametrization, also other heat pumps can be developed based TESPy.
+Here are some advices for implementing your own heat pump model:
+
+* Always have a look at a fluid proprety diagram when checking different refrigerants to find appropriate starting values. There are various tools, e.g. CoolProp (fluid property database of TESPy) or FluProDia (https://fluprodia.readthedocs.io/).
 * Build up your model step by step and make a drawing of the process marking where you specify which parameter.
-* Use starting values if necessary. Also, if you build up your model step by step you will see, where starting values are useful and where you can 
-skip on them.
+* Use starting values if necessary. Also, if you build up your model step by step you will see, where starting values are useful and where you can skip them.
 
 As input to this script, the design point data from the datasheets have to be provided in a csv file. As an example, the inputs for the two models of heat pumps 
 have been provided. In addition, the saved network from a
@@ -145,27 +144,23 @@ have been provided. In addition, the saved network from a
 Calculation Modes
 """""""""""""""""
 
-*Deatiled Calculation Mode*
+*Detailed Calculation Mode*
 
-In the detailed calculation mode, the model takes the inputs, the heat source temperature, the heat demand from the consumer, and the temperature of water 
-entering the condenser of the heat pump. The model first identifies the closest design point. i.e the design evaporator temperature, the design condenser temperature 
-and the design heatload, to the input data and performs a design point calculation. The data from the design point calculation is then used to perform an off-design 
-calculation to obtain the model outputs.
+In the detailed calculation mode, the model takes the following inputs: the heat source temperature, the heat demand from the consumer, and the temperature of water entering the condenser of the heat pump. 
+The model first identifies the closest design point, i.e., the design evaporator temperature, the design condenser temperature and the design heatload, to the input data and performs a design point calculation. 
+The data from the design point calculation is then used to perform an off-design calculation to obtain the model outputs.
 
 *Fast Calculation Mode*
 
 
 
-
-
-
 Hot Water Tank Model
 --------------------
-The hot water tank model developed by…? has been used in this work to act as a buffer in between the heating device and the heat consumer. The size of 
+The hot water tank model developed in a previous project has been used in this work to act as a buffer in between the heating device and the heat consumer. The size of 
 the tank and the initial temperature profile inside the tank can be specified at the time of initialization. Flows of water into and out of the tank can
 be specified as connections. The temperatures and flow rates of the water flowing through these connections can be updated over the course of the 
 simulation. Stratification has been modelled by defining different layers inside the tank with varying temperatures. Heat transfer to the surrounding 
-environment and between the layers inside the tank have been considered. 
+environment and between the layers inside the tank is considered. 
 
 
 Controller Model
