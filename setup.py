@@ -10,7 +10,8 @@ setup(
     long_description=(open('README.rst', encoding='utf-8').read() + '\n\n' +
                       open('CHANGES.txt', encoding='utf-8').read() + '\n\n' +
                       open('AUTHORS.txt', encoding='utf-8').read()),
-    url='https://mosaik.offis.de',
+    long_description_content_type='text/x-rst',
+    url='https://gitlab.com/mosaik/components/energy/mosaik-heatpump',
     install_requires=[
         'mosaik-api>=3.0',
         'tespy>=0.4.2',

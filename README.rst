@@ -25,6 +25,9 @@ You can run the tests with:
 
 .. code-block:: bash
 
+      pytest
+
+
 Heat Pump Model
 ---------------
 
