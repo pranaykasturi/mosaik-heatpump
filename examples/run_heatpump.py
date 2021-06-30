@@ -4,7 +4,7 @@ import mosaik.util
 # Sim config. and other parameters
 SIM_CONFIG = {
     'HeatPumpSim': {
-        'python': 'Heat_Pump_mosaik:HeatPumpSimulator',
+        'python': 'mosaik_heatpump.heatpump.Heat_Pump_mosaik:HeatPumpSimulator',
     },
     'CSV': {
         'python': 'mosaik_csv_3:CSV',

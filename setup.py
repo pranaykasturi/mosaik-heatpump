@@ -18,6 +18,7 @@ setup(
     ],
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
+    py_modules=['mosaik_heatpump'],
     entry_points={
         'console_scripts': [
         ],

@@ -1,4 +1,5 @@
 jsonpickle
+mosaik>=3.0.0
 mosaik-api>=3.0
 pytest
 tespy>=0.4.2
