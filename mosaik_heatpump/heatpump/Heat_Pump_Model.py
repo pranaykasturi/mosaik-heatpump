@@ -3,7 +3,7 @@ This module contains a simulation model of a Heat Pump based on the library TESP
 """
 
 # from ..model import Model
-from Heat_Pump_Des import Heat_Pump_Des
+from mosaik_heatpump.heatpump.Heat_Pump_Des import Heat_Pump_Des
 
 
 class Heat_Pump_Design():

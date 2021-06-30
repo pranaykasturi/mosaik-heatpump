@@ -1,5 +1,5 @@
 import mosaik_api
-from controller import Controller
+from mosaik_heatpump.controller.controller import Controller
 
 META = {
     'type': 'time-based',

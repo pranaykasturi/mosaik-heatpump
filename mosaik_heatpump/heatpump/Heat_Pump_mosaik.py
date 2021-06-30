@@ -2,7 +2,7 @@ import mosaik_api
 import multiprocessing as mp
 import json
 import os
-from Heat_Pump_Model import Heat_Pump
+from mosaik_heatpump.heatpump.Heat_Pump_Model import Heat_Pump
 
 META = {
     'type': 'time-based',
