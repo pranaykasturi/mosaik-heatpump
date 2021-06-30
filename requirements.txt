@@ -1,3 +1,5 @@
-mosaik-api>=3.0
-tespy>=0.4.2
 jsonpickle
+mosaik-api>=3.0
+pytest
+tespy>=0.4.2
+tox
