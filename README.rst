@@ -156,7 +156,7 @@ The data from the design point calculation is then used to perform an off-design
 
 Hot Water Tank Model
 --------------------
-The hot water tank model developed in a previous project has been used in this work to act as a buffer in between the heating device and the heat consumer. The size of 
+The hot water tank model developed by Johannes Gerster in a previous project has been used in this work to act as a buffer in between the heating device and the heat consumer. The size of 
 the tank and the initial temperature profile inside the tank can be specified at the time of initialization. Flows of water into and out of the tank can
 be specified as connections. The temperatures and flow rates of the water flowing through these connections can be updated over the course of the 
 simulation. Stratification has been modelled by defining different layers inside the tank with varying temperatures. Heat transfer to the surrounding 
