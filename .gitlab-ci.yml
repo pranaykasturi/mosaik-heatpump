@@ -22,12 +22,12 @@ python38:
         -   tox -e py38
     stage: test
 
-python39:
-    image: python:3.9.5-slim-buster
-    script:
-        -   python -m pip install --quiet --upgrade -r requirements.txt
-        -   tox -e py39
-    stage: test
+#python39:
+#    image: python:3.9.5-slim-buster
+#    script:
+#        -   python -m pip install --quiet --upgrade -r requirements.txt
+#        -   tox -e py39
+#    stage: test
 
 
 pypi:
