@@ -1,0 +1,48 @@
+image: python:3.8.10-slim-buster
+
+variables:
+    GIT_DEPTH: 1
+
+stages:
+    -   test
+    -   release
+
+
+python37:
+    image: python:3.7.10-slim-buster
+    script:
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   tox -e py37
+    stage: test
+
+python38:
+    image: python:3.8.10-slim-buster
+    script:
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   tox -e py38
+    stage: test
+
+#python39:
+#    image: python:3.9.5-slim-buster
+#    script:
+#        -   python -m pip install --quiet --upgrade -r requirements.txt
+#        -   tox -e py39
+#    stage: test
+
+
+pypi:
+    artifacts:
+        paths:
+            -   dist/*.whl
+    image: python:3.8.10-slim-buster
+    before_script:
+        -   echo $MOSAIK_PYPI_USER
+    script:
+        -   python -m pip install --quiet --upgrade twine wheel
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   python setup.py sdist bdist_wheel
+        -   twine check dist/*
+        -   twine upload --repository-url https://upload.pypi.org/legacy/ --username $MOSAIK_PYPI_USER --password $MOSAIK_PYPI_PASSWORD --verbose dist/*
+    stage: release
+    only:
+      - tags
