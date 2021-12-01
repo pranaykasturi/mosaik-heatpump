@@ -618,6 +618,7 @@ class HeatingRod(object):
         self.pos = params['pos']
         self.T_max = params['T_max']
         self.P_th_stages = np.array(params['P_th_stages'])  # power stages in W
+        self.eta = params['eta']
         for idx, layer in enumerate(layers):
             if layer.bottom <= self.pos < layer.top:
                 self.corresponding_layer = layer
@@ -638,7 +639,7 @@ class HeatingRod(object):
             idx = np.argmin(abs(self.P_th_stages - self.P_th_set))
             # find closest power stage
             self.P_th = self.P_th_stages[idx]
-            self.P_el = -self.P_th
+            self.P_el = -self.P_th/self.eta
         else:
             self.P_th = 0
             self.P_el = 0
