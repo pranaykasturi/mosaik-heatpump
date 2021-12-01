@@ -10,6 +10,7 @@ class Controller():
         self.dhw_demand = None
         self.dhw_supply = None
         self.hp_demand = None
+        self.hp_supply = None
         self.heat_demand = None
         self.heat_supply = None
         self.hwt_connections = None
@@ -30,11 +31,17 @@ class Controller():
 
         self.hwt_mass = None
 
+        self.hwt_hr_P_th_set = None
+
+        self.hp_signal = None
+        self.heater_signal = None
+
         self.T_hp_sp = params.get('T_hp_sp')
         self.T_max = params.get('T_max')
         self.T_min = params.get('T_min')
         self.dhw_in_T = params.get('dhw_in_T')
         self.sh_dT = params.get('sh_dT')
+
 
         self.i = 0
 
@@ -44,6 +51,8 @@ class Controller():
             self.heat_demand = 0
         if self.sh_demand is None or self.sh_demand < 0:
             self.sh_demand = 0
+        else:
+            self.sh_demand *= 1000
         if self.dhw_demand is None or self.dhw_demand < 0:
             self.dhw_demand = 0
 
@@ -55,10 +64,12 @@ class Controller():
 
         # self.T_mean = hwt.T_mean
 
-        sh_fraction, dhw_m_flow = self.calc_dhw_supply(self.step_size, hwt_connections)
-        self.dhw_out_F = - dhw_m_flow
-        self.dhw_in_F = dhw_m_flow
-        self.dhw_in_T = self.dhw_in_T
+        # sh_fraction, dhw_m_flow = self.calc_dhw_supply(self.step_size, hwt_connections)
+        # self.dhw_out_F = - dhw_m_flow
+        # self.dhw_in_F = dhw_m_flow
+        # self.dhw_in_T = self.dhw_in_T
+        
+        sh_fraction = 1 
 
         sh_m_flow, sh_in_T = self.calc_sh_supply(self.step_size, hwt_connections, sh_fraction)
         self.sh_in_F = sh_m_flow
@@ -81,6 +92,12 @@ class Controller():
 
         if self.hp_in_T is None:
             self.hp_in_T = self.hp_out_T
+        
+        if self.hp_supply is None:
+            #print('hp_supply is None')
+            self.hp_supply = 0
+            
+        self.hwt_hr_P_th_set = self.hp_demand - self.hp_supply    #hp_demand or hp_demand_old?            
 
     def calc_dhw_supply(self, step_size, hwt_connections):
 
