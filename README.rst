@@ -85,7 +85,7 @@ Advanced Details of the Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The heat pump model available in TESPy's library was modified and the new schematic of the system is shown below.
 
-.. image:: images/system_schematic.png
+.. image:: docs/images/system_schematic.png
    :width: 600
 
 The consumer system and the expansion valve are unchanged. In the evaporator system, the superheater has been eliminated.
