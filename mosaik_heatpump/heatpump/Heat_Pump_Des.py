@@ -20,7 +20,7 @@ JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data_f
 
 class Heat_Pump_Des():
 
-    def __init__(self, params, COP_m_data):
+    def __init__(self, params, COP_m_data=None):
 
         self.Q_Demand = params.get('Q_Demand')
 
@@ -74,6 +74,7 @@ class Heat_Pump_Des():
             return after
         else:
             return before
+
 
     def _etas_heatload_id(self):
         with open(JSON_DATA_FILE, "r") as read_file_1:
@@ -204,10 +205,6 @@ class Heat_Pump_Des():
         ev_amb_out = Connection(ev, 'out1', amb_out, 'in1')
 
         self.nw.add_conns(amb_in_apu, apu_ev, ev_amb_out)
-
-        # connection evaporator system - compressor system
-
-        # compressor-system
 
         # %% component parametrization
 
