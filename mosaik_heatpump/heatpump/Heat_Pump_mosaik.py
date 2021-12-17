@@ -16,7 +16,7 @@ META = {
     },
 }
 
-JSON_COP_DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), 'COP_m_data.json'))
+JSON_COP_DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), 'cop_m_data.json'))
 
 class HeatPumpSimulator(mosaik_api.Simulator):
     def __init__(self):
@@ -52,7 +52,8 @@ class HeatPumpSimulator(mosaik_api.Simulator):
         COP_m_data = None
         if params['calc_mode'] == 'fast' or params['calc_mode'] == 'fixed':
             with open(JSON_COP_DATA, "r") as read_file_1:
-                COP_m_data = json.load(read_file_1)
+                COP_m_data_all = json.load(read_file_1)
+                COP_m_data = COP_m_data_all[params['hp_model']]
 
         next_eid = len(self.models)
         for i in range(next_eid, next_eid + num):

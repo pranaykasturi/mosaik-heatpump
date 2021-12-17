@@ -15,7 +15,7 @@ import logging
 # logger.define_logging(log_path=True, log_version=True,
 #                       screen_level=logging.ERROR,
 #                       file_level=logging.DEBUG)
-JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data_file.json'))
+JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'eta_s_data.json'))
 
 
 class Heat_Pump_Des():
@@ -29,7 +29,7 @@ class Heat_Pump_Des():
         self.cond_in_T = params.get('cond_in_T')
         # self.cond_in_T = self.cons_T - 5
 
-        self.heat_source = params['heat_source']
+        self.hp_model = params['hp_model']
 
         self.heat_source_T = params.get('heat_source_T', None)
 
@@ -80,14 +80,14 @@ class Heat_Pump_Des():
         with open(JSON_DATA_FILE, "r") as read_file_1:
             data_1 = json.load(read_file_1)
 
-        etas_dict = data_1['etas_list'][self.heat_source]
-        heatload_dict = data_1['heatload_list'][self.heat_source]
-        id_dict = data_1['id_list'][self.heat_source]
+        etas_dict = data_1[self.hp_model]['eta_s']
+        heatload_dict = data_1[self.hp_model]['heatload']
+        id_dict = data_1[self.hp_model]['ids']
 
         heat_source_T_min = min(list(map(int, etas_dict)))
         heat_source_T_max = max(list(map(int, etas_dict)))
 
-        if self.heat_source.lower() == 'air':
+        if 'air' in self.hp_model.lower():
             if heat_source_T_min <= self.heat_source_T <= heat_source_T_max:
                 idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T))
                 self.heat_source_T_des = idx_T
@@ -114,10 +114,20 @@ class Heat_Pump_Des():
 
         self.etas_des = etas_dict[str(idx_T)][str(self.LWC_des)]
 
-        self.heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)] * 1000
+        heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)]
 
-        self.heatload_max = self.heatload_des
-        self.heatload_min = 5000
+        if heatload_des is None:
+            self.skip_step = True
+            self.heatload_des = 0
+            self.heatload_max = 0
+            self.heatload_min = 0
+
+        else:
+            self.heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)] * 1000
+            self.heatload_max = self.heatload_des
+            self.heatload_min = data_1[self.hp_model]['min_heatload']
+
+
         self.idx = id_dict[str(idx_T)][str(self.LWC_des)]
 
 
@@ -126,11 +136,19 @@ class Heat_Pump_Des():
     def _design_hp(self):
 
         # The parameters that will vary for the different heat pump models are defined here
-        if self.heat_source.lower() == 'air':
+        if 'air_6kw' in self.hp_model.lower():
+            params_des = {'m_R410a': 1, 'm_air': 1, 'm_R407c': 0, 'm_water': 0,
+                          'ttd_u': 10, 'amb_p': 1
+                          }
+        elif 'air_8kw' in self.hp_model.lower():
+            params_des = {'m_R410a': 1, 'm_air': 1, 'm_R407c': 0, 'm_water': 0,
+                          'ttd_u': 12, 'amb_p': 1
+                          }
+        elif 'air_16kw' in self.hp_model.lower():
             params_des = {'m_R410a': 1, 'm_air': 1, 'm_R407c': 0, 'm_water': 0,
                           'ttd_u': 15, 'amb_p': 1
                           }
-        elif self.heat_source.lower() == 'water':
+        elif 'water' in self.hp_model.lower():
             params_des = {'m_R410a': 0, 'm_air': 0, 'm_R407c': 1, 'm_water': 1,
                           'ttd_u': 23, 'amb_p': 1
                           }
@@ -239,7 +257,7 @@ class Heat_Pump_Des():
                                        'R410a': params_des['m_R410a']
                                        }
                          )
-        close_crp.set_attr(T=(self.LWC_des-5), p=2, fluid={'R407c': 0, 'R410a': 0, 'water': 1, 'air': 0},
+        close_crp.set_attr(T=(self.LWC_des-5), p=1.5, fluid={'R407c': 0, 'R410a': 0, 'water': 1, 'air': 0},
                            offdesign=['m']
                            )
         cd_cons.set_attr(T=self.LWC_des, design=['T'])
@@ -385,7 +403,7 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        'heat_source': 'air',
+        'hp_model': 'Air_16kW',
         'heat_source_T': 7,
         'cons_T': 35,
         'calc_mode': 'detailed'
