@@ -18,6 +18,9 @@ setup(
         'jsonpickle'
     ],
     packages=find_packages(exclude=['tests*']),
+    package_data={
+        "": ["*.json"]
+    },
     include_package_data=True,
     py_modules=['mosaik_heatpump'],
     entry_points={
