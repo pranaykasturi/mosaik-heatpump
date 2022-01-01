@@ -37,6 +37,7 @@ class Controller():
         self.heater_signal = None
 
         self.T_hp_sp = params.get('T_hp_sp')
+        self.T_hr_sp = params.get('T_hr_sp')
         self.T_max = params.get('T_max')
         self.T_min = params.get('T_min')
         self.dhw_in_T = params.get('dhw_in_T')
@@ -97,7 +98,11 @@ class Controller():
             #print('hp_supply is None')
             self.hp_supply = 0
             
-        self.hwt_hr_P_th_set = self.hp_demand - self.hp_supply    #hp_demand or hp_demand_old?            
+        if self.T_hr_sp is not None:
+            if self.T_mean < self.T_hr_sp:
+                self.hwt_hr_P_th_set = (self.hwt_mass * 4184 * (self.T_hr_sp - self.T_mean)) / self.step_size
+            else:
+                self.hwt_hr_P_th_set = 0
 
     def calc_dhw_supply(self, step_size, hwt_connections):
 
