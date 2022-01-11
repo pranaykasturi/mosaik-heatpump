@@ -1,3 +1,4 @@
+from hplib.src import hplib as hpl
 from tespy.networks import Network
 from tespy.components import (
     Sink, Source, Compressor, Condenser, Pump, HeatExchangerSimple,
@@ -29,9 +30,11 @@ class Heat_Pump_Des():
         self.cond_in_T = params.get('cond_in_T')
         # self.cond_in_T = self.cons_T - 5
 
-        self.hp_model = params['hp_model']
+        self.hp_model = params.get('hp_model')
+        self.heat_source = params.get('heat_source')
 
         self.heat_source_T = params.get('heat_source_T', None)
+        self.T_amb = params.get('T_amb')
 
         self.LWE = None
         self.LWC = None
@@ -50,11 +53,26 @@ class Heat_Pump_Des():
 
         self.Q_Supplied = None
 
+        self.on_fraction = None
+
         self.cond_m = None
 
         self.calc_mode = params.get('calc_mode')
 
         self.COP_m_data = COP_m_data
+
+        if self.calc_mode.lower() == 'hplib':
+            if self.hp_model == 'Generic':
+                if 'air' in self.heat_source.lower():
+                    parameters = hpl.get_parameters(model=self.hp_model, group_id=1, t_in=self.heat_source_T, t_out=self.cons_T,
+                                                    p_th=self.Q_Demand)
+                elif 'water' in self.heat_source.lower():
+                    parameters = hpl.get_parameters(model=self.hp_model, group_id=2, t_in=self.heat_source_T, t_out=self.cons_T,
+                                                    p_th=self.Q_Demand)
+            else:
+                parameters = hpl.get_parameters(self.hp_model)
+
+            self.hp = hpl.HeatPump(parameters)
 
 
 
@@ -307,10 +325,15 @@ class Heat_Pump_Des():
     def step(self, inputs):
 
         self.skip_step = False
+        self.on_fraction = 1
 
         heat_source_T = inputs.get('heat_source_T')
         if heat_source_T is not None:
             self.heat_source_T = heat_source_T
+
+        T_amb = inputs.get('T_amb')
+        if T_amb is not None:
+            self.T_amb = T_amb
 
         cond_in_T = inputs.get('cond_in_T')
         if cond_in_T is not None:
@@ -322,72 +345,87 @@ class Heat_Pump_Des():
 
         id_old = self.idx
 
-        if self.calc_mode == 'fixed':
-            self.heatload_min = 5000
-            self.heatload_max = 11040
+        if self.calc_mode == 'hplib':
+            results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
+                                       t_amb=self.T_amb, mode=1)
+            self.cond_m = round(results['m_dot'], 2)
+            self.COP = round(results['COP'], 2)
+            self.P_cons = round(results['P_el'], 2)
+            self.cons_T = round(results['T_out'], 2)
+            self.Q_Supplied = round(results['P_th'], 2)
+            if self.Q_Supplied > self.Q_Demand:
+                self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
+                self.Q_Supplied = self.Q_Demand
+                self.P_cons *= self.on_fraction
+
         else:
-            self._etas_heatload_id()
 
-        if self.Q_Demand < self.heatload_min:
-            self.skip_step = True
-        elif self.Q_Demand > self.heatload_max:
-            self.Q_Supplied = self.heatload_max
-            Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
-        else:
-            self.Q_Supplied = self.Q_Demand
-            Q_Supply_Excess = self.heatload_max - self.Q_Supplied
+            if self.calc_mode == 'fixed':
+                self.heatload_min = 5000
+                self.heatload_max = 11040
+            else:
+                self._etas_heatload_id()
 
-        if not self.skip_step:
+            if self.Q_Demand < self.heatload_min:
+                self.skip_step = True
+            elif self.Q_Demand > self.heatload_max:
+                self.Q_Supplied = self.heatload_max
+                Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
+            else:
+                self.Q_Supplied = self.Q_Demand
+                Q_Supply_Excess = self.heatload_max - self.Q_Supplied
 
-            if self.calc_mode == 'fast':
-                heat_source_T_idx = str(self._take_closest(list(map(int, self.COP_m_data.keys())), self.heat_source_T))
-                cond_in_T_idx = str(self._take_closest(list(map(int, self.COP_m_data[heat_source_T_idx].keys())),
-                                                       self.cond_in_T))
-                HL_idx = str(self._take_closest(list(map(float, self.COP_m_data[heat_source_T_idx][cond_in_T_idx].keys())),
-                                                self.Q_Supplied))
-                try:
-                    self.cond_m = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['cond_m']
-                    self.COP = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['COP']
-                except:
-                    self.step_error()
+            if not self.skip_step:
 
-                if self.cond_m > 0:
+                if self.calc_mode == 'fast':
+                    heat_source_T_idx = str(self._take_closest(list(map(int, self.COP_m_data.keys())), self.heat_source_T))
+                    cond_in_T_idx = str(self._take_closest(list(map(int, self.COP_m_data[heat_source_T_idx].keys())),
+                                                           self.cond_in_T))
+                    HL_idx = str(self._take_closest(list(map(float, self.COP_m_data[heat_source_T_idx][cond_in_T_idx].keys())),
+                                                    self.Q_Supplied))
+                    try:
+                        self.cond_m = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['cond_m']
+                        self.COP = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['COP']
+                    except:
+                        self.step_error()
+
+                    if self.cond_m > 0:
+                        self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
+                        self.P_cons = self.Q_Supplied/self.COP
+                    else:
+                        self.step_error()
+
+                elif self.calc_mode == 'fixed':
+
+                    self.cond_m = 0.52
+                    self.COP = 2
                     self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
                     self.P_cons = self.Q_Supplied/self.COP
-                else:
-                    self.step_error()
 
-            elif self.calc_mode == 'fixed':
+                elif self.calc_mode == 'detailed':
 
-                self.cond_m = 0.52
-                self.COP = 2
-                self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
-                self.P_cons = self.Q_Supplied/self.COP
+                    if id_old != self.idx:
+                        try:
+                            self._design_hp()
+                        except:
+                            self.step_error()
 
-            elif self.calc_mode == 'detailed':
+                    if not self.skip_step:
+                        self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
+                        self.nw.get_conn('consumer cycle closer:out1_condenser recirculation pump:in1').set_attr(T=self.cond_in_T)
+                        self.LWE = self.heat_source_T - 5
+                        self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LWE)
+                        self.nw.get_comp('consumer').set_attr(Q=-self.Q_Supplied)
+                        try:
+                            self.nw.solve('offdesign', design_path='heat_pump')
+                            self.cond_m = self.nw.get_conn('condenser:out2_consumer:in1').m.val
+                            self.cons_T = self.nw.get_conn('condenser:out2_consumer:in1').T.val
+                            self.p_cop_calc()
+                        except:
+                            self.step_error()
 
-                if id_old != self.idx:
-                    try:
-                        self._design_hp()
-                    except:
-                        self.step_error()
-
-                if not self.skip_step:
-                    self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
-                    self.nw.get_conn('consumer cycle closer:out1_condenser recirculation pump:in1').set_attr(T=self.cond_in_T)
-                    self.LWE = self.heat_source_T - 5
-                    self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LWE)
-                    self.nw.get_comp('consumer').set_attr(Q=-self.Q_Supplied)
-                    try:
-                        self.nw.solve('offdesign', design_path='heat_pump')
-                        self.cond_m = self.nw.get_conn('condenser:out2_consumer:in1').m.val
-                        self.cons_T = self.nw.get_conn('condenser:out2_consumer:in1').T.val
-                        self.p_cop_calc()
-                    except:
-                        self.step_error()
-
-        else:
-            self.step_error()
+            else:
+                self.step_error()
 
     def step_error(self):
         self.skip_step = True

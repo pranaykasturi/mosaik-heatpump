@@ -11,7 +11,7 @@ META = {
             'public': True,
             'params': ['params'],
             'attrs': ['Q_Demand', 'Q_Supplied', 'heat_source_T', 'heat_source', 'cons_T', 'P_Required', 'COP',
-                      'cond_m_in', 'cond_m_out', 'cond_in_T'],
+                      'cond_m', 'cond_in_T', 'T_amb', 'on_fraction'],
         },
     },
 }

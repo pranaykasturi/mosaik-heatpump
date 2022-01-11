@@ -31,15 +31,15 @@ class Heat_Pump_State():
         """The source of heat for the heat pump ('water' or 'air')"""
         self.heat_source_T = 0
         """The temperature of the heat source (in °C)"""
-        self.cond_m_in = 0
-        """The mass flow rate on the condenser side inlet of the heat pump (in kg/s)"""
-        self.cond_m_out = 0
-        """The mass flow rate on the condenser side outlet of the heat pump (in kg/s)"""
+        self.T_amb = 0
+        """The ambient temperature (in °C)"""
+        self.cond_m = 0
+        """The mass flow rate of water in the condenser of the heat pump (in kg/s)"""
 
 
 class Heat_Pump_Inputs():
     """Inputs variables to the heat pump for each time step"""
-    __slots__ = ['Q_Demand', 'heat_source', 'heat_source_T', 'cons_T', 'step_size', 'cond_in_T']
+    __slots__ = ['Q_Demand', 'heat_source', 'heat_source_T', 'cons_T', 'step_size', 'cond_in_T', 'T_amb']
 
     def __init__(self, params):
         self.Q_Demand = params.get('Q_Demand')
@@ -50,6 +50,9 @@ class Heat_Pump_Inputs():
 
         self.heat_source_T = params.get('heat_source_T')
         """The temperature of the heat source (in °C)"""
+
+        self.heat_source_T = params.get('T_amb')
+        """The ambient temperature (in °C)"""
 
         # self.cons_T = params.get('cons_T')
         # """The temperature at which heat is supplied to the consumer (in °C)"""
@@ -71,6 +74,7 @@ class Heat_Pump():
         {
             'cons_T': 35,
             'heat_source_T': 12,
+            'T_amb': 12,
             'heat_source': 'water' or 'air'
         }
 
@@ -79,6 +83,8 @@ class Heat_Pump():
 
     -*heat_source_T* is the temperature, in °C, at which the ambient fluid (water or air)
     is available as the heat source.
+
+    -*T_amb* is the ambient temperature, in °C.
 
     -*heat_source* is the fluid, either 'water' or 'air', that acts as the heat source for
     the system.
@@ -110,7 +116,8 @@ class Heat_Pump():
         step_inputs = {'heat_source_T': self.inputs.heat_source_T,
                        'Q_Demand': self.inputs.Q_Demand,
                        # 'cons_T': self.inputs.cons_T,
-                       'cond_in_T': self.inputs.cond_in_T
+                       'cond_in_T': self.inputs.cond_in_T,
+                       'T_amb': self.inputs.T_amb
                        }
 
         if self.inputs.Q_Demand is not None:
@@ -118,6 +125,9 @@ class Heat_Pump():
 
         if self.inputs.heat_source_T is not None:
             self.state.heat_source_T = self.inputs.heat_source_T
+
+        if self.inputs.T_amb is not None:
+            self.state.T_amb = self.inputs.T_amb
 
         if self.inputs.cond_in_T is not None:
             self.state.cond_in_T = self.inputs.cond_in_T
@@ -127,6 +137,7 @@ class Heat_Pump():
         self.state.P_Required = self.design.Heat_Pump.P_cons
         self.state.COP = self.design.Heat_Pump.COP
         self.state.Q_Supplied = self.design.Heat_Pump.Q_Supplied
-        self.state.cond_m_out = self.design.Heat_Pump.cond_m
-        self.state.cond_m_in = - self.design.Heat_Pump.cond_m
+        self.state.on_fraction = self.design.Heat_Pump.on_fraction
+        self.state.cond_m = self.design.Heat_Pump.cond_m
         self.state.cons_T = self.design.Heat_Pump.cons_T
+
