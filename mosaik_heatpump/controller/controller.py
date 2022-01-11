@@ -4,7 +4,8 @@ class Controller():
 
     def __init__(self, params):
 
-        self.outside_temperature = None
+        self.T_amb = None
+        self.heat_source_T = None
         self.sh_demand = None
         self.sh_supply = None
         self.dhw_demand = None
@@ -28,6 +29,8 @@ class Controller():
         self.hp_in_T = None
         self.hp_out_F = None
         self.hp_out_T = None
+        self.hp_cond_m = None
+        self.hp_on_fraction = None
 
         self.hwt_mass = None
 
@@ -35,8 +38,10 @@ class Controller():
 
         self.hp_signal = None
         self.heater_signal = None
+        self.hp_status = None
 
-        self.T_hp_sp = params.get('T_hp_sp')
+        self.T_hp_sp_h = params.get('T_hp_sp_h')
+        self.T_hp_sp_l = params.get('T_hp_sp_l')
         self.T_hr_sp = params.get('T_hr_sp')
         self.T_max = params.get('T_max')
         self.T_min = params.get('T_min')
@@ -84,8 +89,15 @@ class Controller():
 
         self.heat_supply = self.sh_supply + self.dhw_supply
 
-        if self.T_mean < self.T_hp_sp:
-            self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp - self.T_mean) / self.step_size
+        if self.T_mean < self.T_hp_sp_l:
+            self.hp_status = 'on'
+            
+        if self.hp_status == 'on':
+            if self.T_mean < (self.T_hp_sp_h-1):
+                self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_h - self.T_mean) / self.step_size
+            else:
+                self.hp_demand = 0
+                self.hp_status = 'off'
         else:
             self.hp_demand = 0
 
@@ -97,6 +109,9 @@ class Controller():
         if self.hp_supply is None:
             #print('hp_supply is None')
             self.hp_supply = 0
+
+        self.hp_in_F = self.hp_on_fraction * self.hp_cond_m
+        self.hp_out_F = -self.hp_on_fraction * self.hp_cond_m
             
         if self.T_hr_sp is not None:
             if self.T_mean < self.T_hr_sp:

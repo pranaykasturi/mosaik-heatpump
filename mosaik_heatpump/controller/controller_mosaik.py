@@ -7,10 +7,10 @@ META = {
         'Controller': {
             'public': True,
             'params': ['params'],
-            'attrs': ['_', 'outside_temperature', 'hp_demand', 'heat_supply', 'heat_demand', 'sh_demand', 'sh_supply',
+            'attrs': ['_', 'T_amb', 'heat_source_T', 'hp_demand', 'heat_supply', 'heat_demand', 'sh_demand', 'sh_supply',
                       'dhw_demand', 'dhw_supply', 'sh_in_F', 'sh_in_T', 'sh_out_F', 'dhw_in_F', 'dhw_in_T', 'dhw_out_F',
                       'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T', 'hp_supply', 'hwt_connections', 'T_mean', 'hwt_mass',
-                      'hwt_hr_P_th_set'],
+                      'hwt_hr_P_th_set', 'hp_on_fraction', 'hp_cond_m'],
             # 'attrs': ['outside_temperature', 'sh_demand', 'sh_supply', 'dhw_demand', 'dhw_supply', 'hp_demand'],
         },
     },
