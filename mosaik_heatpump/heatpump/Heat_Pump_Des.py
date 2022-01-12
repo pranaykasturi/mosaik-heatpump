@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from hplib.src import hplib as hpl
 from tespy.networks import Network
 from tespy.components import (
@@ -10,7 +13,7 @@ from tespy.tools.characteristics import load_default_char as ldc
 from tespy.tools import logger
 from bisect import bisect_left
 import json
-import os
+
 import logging
 # logging.basicConfig(level=logging.ERROR)
 # logger.define_logging(log_path=True, log_version=True,
@@ -441,15 +444,17 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        'hp_model': 'Air_16kW',
+        'hp_model': 'Generic',
+        'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
-        'calc_mode': 'detailed'
+        'Q_Demand': 10000,
+        'calc_mode': 'hplib'
     }
 
     heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
-    inputs_air_1 = {'heat_source_T': 2, 'Q_Demand': 11040, 'cond_in_T': 45}
+    inputs_air_1 = {'heat_source_T': 2, 'Q_Demand': 11040, 'cond_in_T': 45, 'T_amb': 2}
 
     heat_pump_1.step(inputs_air_1)
 
