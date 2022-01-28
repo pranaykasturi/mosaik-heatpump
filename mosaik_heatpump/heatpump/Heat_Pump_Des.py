@@ -124,12 +124,17 @@ class Heat_Pump_Des():
                 self.skip_step = True
 
         cons_T_min = min(list(map(int, etas_dict[str(idx_T)])))
-        cons_T_max = max(list(map(int, etas_dict[str(idx_T)])))
+        self.cons_T_max = max(list(map(int, etas_dict[str(idx_T)])))
 
         cons_T_des = self.cond_in_T + 5
 
-        if cons_T_des < cons_T_min or cons_T_des > cons_T_max:
+        if cons_T_des < cons_T_min:
             self.skip_step = True
+        elif cons_T_des > self.cons_T_max:
+            if self.cond_in_T < self.cons_T_max:
+                cons_T_des = self.cons_T_max
+            else:
+                self.skip_step = True
 
         self.LWC_des = self._take_closest(list(map(int, etas_dict[str(idx_T)])), cons_T_des)
 
@@ -394,6 +399,9 @@ class Heat_Pump_Des():
 
                     if self.cond_m > 0:
                         self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
+                        if self.cons_T > self.cons_T_max:
+                            self.cons_T = self.cons_T_max
+                            self.Q_Supplied = self.cond_m * 4184 * (self.cons_T - self.cond_in_T)
                         self.P_cons = self.Q_Supplied/self.COP
                     else:
                         self.step_error()
