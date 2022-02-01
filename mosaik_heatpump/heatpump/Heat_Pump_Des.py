@@ -123,38 +123,39 @@ class Heat_Pump_Des():
             else:
                 self.skip_step = True
 
-        cons_T_min = min(list(map(int, etas_dict[str(idx_T)])))
-        self.cons_T_max = max(list(map(int, etas_dict[str(idx_T)])))
+        if not self.skip_step:
+            cons_T_min = min(list(map(int, etas_dict[str(idx_T)])))
+            self.cons_T_max = max(list(map(int, etas_dict[str(idx_T)])))
 
-        cons_T_des = self.cond_in_T + 5
+            cons_T_des = self.cond_in_T + 5
 
-        if cons_T_des < cons_T_min:
-            self.skip_step = True
-        elif cons_T_des > self.cons_T_max:
-            if self.cond_in_T < self.cons_T_max:
-                cons_T_des = self.cons_T_max
-            else:
+            if cons_T_des < cons_T_min:
                 self.skip_step = True
+            elif cons_T_des > self.cons_T_max:
+                if self.cond_in_T < self.cons_T_max:
+                    cons_T_des = self.cons_T_max
+                else:
+                    self.skip_step = True
 
-        self.LWC_des = self._take_closest(list(map(int, etas_dict[str(idx_T)])), cons_T_des)
+            self.LWC_des = self._take_closest(list(map(int, etas_dict[str(idx_T)])), cons_T_des)
 
-        self.etas_des = etas_dict[str(idx_T)][str(self.LWC_des)]
+            self.etas_des = etas_dict[str(idx_T)][str(self.LWC_des)]
 
-        heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)]
+            heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)]
 
-        if heatload_des is None:
-            self.skip_step = True
-            self.heatload_des = 0
-            self.heatload_max = 0
-            self.heatload_min = 0
+            if heatload_des is None:
+                self.skip_step = True
+                self.heatload_des = 0
+                self.heatload_max = 0
+                self.heatload_min = 0
 
-        else:
-            self.heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)] * 1000
-            self.heatload_max = self.heatload_des
-            self.heatload_min = data_1[self.hp_model]['min_heatload']
+            else:
+                self.heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)] * 1000
+                self.heatload_max = self.heatload_des
+                self.heatload_min = data_1[self.hp_model]['min_heatload']
 
 
-        self.idx = id_dict[str(idx_T)][str(self.LWC_des)]
+            self.idx = id_dict[str(idx_T)][str(self.LWC_des)]
 
 
 
