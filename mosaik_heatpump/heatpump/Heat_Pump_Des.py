@@ -39,6 +39,7 @@ class Heat_Pump_Des():
         self.heat_source_T = params.get('heat_source_T', None)
         self.T_amb = params.get('T_amb')
 
+
         self.LWE = None
         self.LWC = None
 
@@ -48,6 +49,8 @@ class Heat_Pump_Des():
 
         self.etas_des = None
         self.heatload_des = None
+
+        self.cmp_stages = 1
 
         self.idx = None
         self.nw = None
@@ -164,26 +167,19 @@ class Heat_Pump_Des():
 
         # The parameters that will vary for the different heat pump models are defined here
         if 'air_6kw' in self.hp_model.lower():
-            params_des = {'m_R410a': 1, 'm_air': 1, 'm_R407c': 0, 'm_water': 0,
-                          'ttd_u': 10, 'amb_p': 1
-                          }
+            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 10}
         elif 'air_8kw' in self.hp_model.lower():
-            params_des = {'m_R410a': 1, 'm_air': 1, 'm_R407c': 0, 'm_water': 0,
-                          'ttd_u': 12, 'amb_p': 1
-                          }
+            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 12}
         elif 'air_16kw' in self.hp_model.lower():
-            params_des = {'m_R410a': 1, 'm_air': 1, 'm_R407c': 0, 'm_water': 0,
-                          'ttd_u': 15, 'amb_p': 1
-                          }
+            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 15}
+        elif 'air_60kw' in self.hp_model.lower():
+            params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'ttd_u': 15}
+            self.cmp_stages = 2
         elif 'water' in self.hp_model.lower():
-            params_des = {'m_R410a': 0, 'm_air': 0, 'm_R407c': 1, 'm_water': 1,
-                          'ttd_u': 23, 'amb_p': 1
-                          }
+            params_des = {'ref': 'R407c', 'm_air': 0, 'm_water': 1, 'ttd_u': 23}
 
-        self.nw = Network(
-            fluids=['R407c', 'R410a', 'water', 'air'], T_unit='C', p_unit='bar',
-            h_unit='kJ / kg', m_unit='kg / s'
-        )
+        self.nw = Network(fluids=[params_des['ref'], 'air', 'water'], T_unit='C', p_unit='bar',
+                          h_unit='kJ / kg', m_unit='kg / s')
 
         self.nw.set_attr(iterinfo=False)
 
@@ -194,6 +190,10 @@ class Heat_Pump_Des():
         cons_closer = CycleCloser('consumer cycle closer')
         amb_in = Source('source ambient')
         amb_out = Sink('sink ambient')
+
+        if self.cmp_stages == 2:
+            ic_in = Source('source intercool')
+            ic_out = Sink('sink intercool')
 
         # ambient air system
         apu = Pump('ambient pump')
@@ -211,9 +211,16 @@ class Heat_Pump_Des():
         ev = HeatExchanger('evaporator')
         erp = Pump('evaporator recirculation pump')
 
+        if self.cmp_stages == 2:
+            su = HeatExchanger('superheater')
+
         # compressor-system
 
-        cp = Compressor('compressor')
+        cp1 = Compressor('compressor')
+
+        if self.cmp_stages == 2:
+            cp2 = Compressor('compressor 2')
+            he = HeatExchanger('intercooler')
 
         # %% connections
 
@@ -240,16 +247,36 @@ class Heat_Pump_Des():
         dr_erp = Connection(dr, 'out1', erp, 'in1')
         erp_ev = Connection(erp, 'out1', ev, 'in2')
         ev_dr = Connection(ev, 'out2', dr, 'in2')
-        dr_cp = Connection(dr, 'out2', cp, 'in1')
-        cp_cc = Connection(cp, 'out1', cc, 'in1')
 
-        self.nw.add_conns(va_dr, dr_erp, erp_ev, ev_dr, dr_cp, cp_cc)
+        self.nw.add_conns(va_dr, dr_erp, erp_ev, ev_dr)
 
         amb_in_apu = Connection(amb_in, 'out1', apu, 'in1')
-        apu_ev = Connection(apu, 'out1', ev, 'in1')
         ev_amb_out = Connection(ev, 'out1', amb_out, 'in1')
 
-        self.nw.add_conns(amb_in_apu, apu_ev, ev_amb_out)
+        self.nw.add_conns(amb_in_apu, ev_amb_out)
+
+        if self.cmp_stages == 2:
+            dr_su = Connection(dr, 'out2', su, 'in2')
+            apu_su = Connection(apu, 'out1', su, 'in1')
+            su_ev = Connection(su, 'out1', ev, 'in1')
+            su_cp1 = Connection(su, 'out2', cp1, 'in1')
+            self.nw.add_conns(dr_su, apu_su, su_ev, su_cp1)
+        else:
+            dr_cp = Connection(dr, 'out2', cp1, 'in1')
+            cp_cc = Connection(cp1, 'out1', cc, 'in1')
+            apu_ev = Connection(apu, 'out1', ev, 'in1')
+
+            self.nw.add_conns(dr_cp, cp_cc, apu_ev)
+
+        if self.cmp_stages == 2:
+            cp1_he = Connection(cp1, 'out1', he, 'in1')
+            he_cp2 = Connection(he, 'out1', cp2, 'in1')
+            cp2_cc = Connection(cp2, 'out1', cc, 'in1')
+
+            ic_in_he = Connection(ic_in, 'out1', he, 'in2')
+            he_ic_out = Connection(he, 'out2', ic_out, 'in1')
+
+            self.nw.add_conns(cp1_he, he_cp2, ic_in_he, he_ic_out, cp2_cc)
 
         # %% component parametrization
 
@@ -272,19 +299,26 @@ class Heat_Pump_Des():
         erp.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
         apu.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
 
+        if self.cmp_stages == 2:
+            su.set_attr(pr1=0.99, pr2=0.99, ttd_u=2, design=['pr1', 'pr2', 'ttd_u'],
+                        offdesign=['zeta1', 'zeta2', 'kA_char'])
         # compressor system
 
-        cp.set_attr(eta_s=self.etas_des, design=['eta_s'], offdesign=['eta_s_char'])
+        cp1.set_attr(eta_s=self.etas_des, design=['eta_s'], offdesign=['eta_s_char'])
 
+        if self.cmp_stages == 2:
+            cp2.set_attr(eta_s=0.8, pr=2, design=['eta_s'], offdesign=['eta_s_char'])
+
+            he.set_attr(pr1=0.98, pr2=0.98, design=['pr1', 'pr2'],
+                        offdesign=['zeta1', 'zeta2', 'kA_char'])
         # %% connection parametrization
 
         # condenser system
 
-        c_in_cd.set_attr(p0=30, fluid={'R407c': params_des['m_R407c'], 'water': 0, 'air': 0,
-                                       'R410a': params_des['m_R410a']
-                                       }
+        c_in_cd.set_attr(p0=30, fluid={params_des['ref']: 1, 'water': 0,
+                                       'air': 0}
                          )
-        close_crp.set_attr(T=(self.LWC_des-5), p=1.5, fluid={'R407c': 0, 'R410a': 0, 'water': 1, 'air': 0},
+        close_crp.set_attr(T=(self.LWC_des-5), p=1.5, fluid={params_des['ref']: 0, 'water': 1, 'air': 0},
                            offdesign=['m']
                            )
         cd_cons.set_attr(T=self.LWC_des, design=['T'])
@@ -296,16 +330,24 @@ class Heat_Pump_Des():
         # evaporator system hot side
 
         # pumping at constant rate in partload
-        amb_in_apu.set_attr(T=self.heat_source_T_des, p=params_des['amb_p'],
-                            fluid={'R407c': 0, 'R410a': 0, 'water': params_des['m_water'],
+        amb_in_apu.set_attr(T=self.heat_source_T_des, p=1,
+                            fluid={params_des['ref']: 0, 'water': params_des['m_water'],
                                    'air': params_des['m_air']
                                    }
                             )
-
-        apu_ev.set_attr(p=1.0001)  # check this
+        if self.cmp_stages == 2:
+            su_cp1.set_attr(state='g')
+            apu_su.set_attr(p=1.0001)
+            he_cp2.set_attr(T=(self.LWC_des-5), p0=10)
+            ic_in_he.set_attr(p=1.5, T=7, fluid={'water': params_des['m_water'], params_des['ref']: 0,
+                                                 'air': params_des['m_air']})
+            he_ic_out.set_attr(T=(self.LWC_des-10), design=['T'])
+        else:
+            apu_ev.set_attr(p=1.0001)  # check this
+            dr_cp.set_attr(p0=6.5, h0=400)
         # ev_amb_out.set_attr(T=self.LWE_des, design=['T'])
         ev_amb_out.set_attr(T=self.LWE_des)
-        dr_cp.set_attr(p0=6.5, h0=400)
+
 
         # %% key paramter
 
@@ -325,6 +367,9 @@ class Heat_Pump_Des():
                        self.nw.get_comp('condenser recirculation pump').P.val +
                        self.nw.get_comp('ambient pump').P.val
                        )
+
+        if self.cmp_stages == 2:
+            self.P_cons += self.nw.get_comp('compressor 2').P.val
 
         self.COP = -self.nw.get_comp('consumer').Q.val / self.P_cons
 
@@ -453,17 +498,17 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        'hp_model': 'Generic',
+        'hp_model': 'Air_60kW',
         'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
-        'Q_Demand': 10000,
-        'calc_mode': 'hplib'
+        'Q_Demand': 60100,
+        'calc_mode': 'detailed'
     }
 
     heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
-    inputs_air_1 = {'heat_source_T': 2, 'Q_Demand': 11040, 'cond_in_T': 45, 'T_amb': 2}
+    inputs_air_1 = {'heat_source_T': 8, 'Q_Demand': 48500, 'cond_in_T': 30, 'T_amb': 8}
 
     heat_pump_1.step(inputs_air_1)
 
