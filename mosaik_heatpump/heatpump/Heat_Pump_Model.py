@@ -35,6 +35,7 @@ class Heat_Pump_State():
         """The ambient temperature (in °C)"""
         self.cond_m = 0
         """The mass flow rate of water in the condenser of the heat pump (in kg/s)"""
+        self.cond_m_neg = 0
 
 
 class Heat_Pump_Inputs():
@@ -139,5 +140,6 @@ class Heat_Pump():
         self.state.Q_Supplied = self.design.Heat_Pump.Q_Supplied
         self.state.on_fraction = self.design.Heat_Pump.on_fraction
         self.state.cond_m = self.design.Heat_Pump.cond_m
+        self.state.cond_m_neg = - self.design.Heat_Pump.cond_m
         self.state.cons_T = self.design.Heat_Pump.cons_T
 

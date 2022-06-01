@@ -20,10 +20,12 @@ class Controller():
         self.sh_in_F = None
         self.sh_in_T = None
         self.sh_out_F = None
+        self.sh_out_T = None
 
         self.dhw_in_F = None
         self.dhw_in_T = None
         self.dhw_out_F = None
+        self.dhw_out_T = None
 
         self.hp_in_F = None
         self.hp_in_T = None
@@ -40,14 +42,18 @@ class Controller():
         self.heater_signal = None
         self.hp_status = None
 
+        self.P_hr_sh = None
+        self.P_hr_dhw = None
+
         self.T_hp_sp_h = params.get('T_hp_sp_h')
         self.T_hp_sp_l = params.get('T_hp_sp_l')
         self.T_hr_sp = params.get('T_hr_sp')
+        self.T_hr_sp_dhw = params.get('T_hr_sp_dhw')
+        self.T_hr_sp_sh = params.get('T_hr_sp_sh')
         self.T_max = params.get('T_max')
         self.T_min = params.get('T_min')
         self.dhw_in_T = params.get('dhw_in_T')
         self.sh_dT = params.get('sh_dT')
-
 
         self.i = 0
 
@@ -70,17 +76,31 @@ class Controller():
 
         # self.T_mean = hwt.T_mean
 
-        # sh_fraction, dhw_m_flow = self.calc_dhw_supply(self.step_size, hwt_connections)
-        # self.dhw_out_F = - dhw_m_flow
-        # self.dhw_in_F = dhw_m_flow
-        # self.dhw_in_T = self.dhw_in_T
+        # sh_fraction, dhw_m_flow, dhw_out_T = self.calc_dhw_supply(self.step_size, hwt_connections)
+        dhw_m_flow, dhw_out_T = self.calc_dhw_supply(hwt_connections)
+        self.dhw_out_F = - dhw_m_flow
+        self.dhw_in_F = dhw_m_flow
+        self.dhw_in_T = self.dhw_in_T
+        self.dhw_out_T = dhw_out_T
+        if self.dhw_out_T < self.T_hr_sp_dhw:
+            self.P_hr_dhw = self.dhw_in_F * 4184 * (self.T_hr_sp_dhw - self.dhw_out_T)
+        else:
+            self.P_hr_dhw = 0
         
-        sh_fraction = 1 
+        # sh_fraction = 1
 
-        sh_m_flow, sh_in_T = self.calc_sh_supply(self.step_size, hwt_connections, sh_fraction)
+        # sh_m_flow, sh_in_T = self.calc_sh_supply(self.step_size, hwt_connections, sh_fraction)
+        sh_m_flow, sh_in_T, sh_out_T = self.calc_sh_supply(hwt_connections)
         self.sh_in_F = sh_m_flow
         self.sh_in_T = sh_in_T
         self.sh_out_F = - sh_m_flow
+        self.sh_out_T = sh_out_T
+
+        if self.sh_out_T < self.T_hr_sp_sh:
+            self.P_hr_sh = self.sh_in_F * 4184 * (self.T_hr_sp_sh - self.sh_out_T)
+            self.sh_in_T = self.T_hr_sp_sh - self.sh_dT
+        else:
+            self.P_hr_sh = 0
 
         if self.sh_supply is None:
             self.sh_supply = 0
@@ -119,39 +139,42 @@ class Controller():
             else:
                 self.hwt_hr_P_th_set = 0
 
-    def calc_dhw_supply(self, step_size, hwt_connections):
+    def calc_dhw_supply(self, hwt_connections):
 
-        sh_fraction = 1 # remove later
+        # sh_fraction = 1 # remove later/
 
         for key, connection in hwt_connections.items():
 
             if connection.type == 'dhw_out':
                 if connection.T > self.T_min:
-                    dhw_m_flow = self.dhw_demand / (4184 * (connection.T - self.dhw_in_T))
-                    if dhw_m_flow > (connection.corresponding_layer.volume / step_size):
-                        dhw_m_flow = connection.corresponding_layer.volume / step_size
-                        sh_fraction = 0
-                    else:
-                        sh_fraction = (connection.corresponding_layer.volume - (dhw_m_flow * step_size))/connection.corresponding_layer.volume
+                    # dhw_m_flow = self.dhw_demand / (4184 * (connection.T - self.dhw_in_T))
+                    dhw_m_flow = self.dhw_demand / self.step_size
+                    # if dhw_m_flow > (connection.corresponding_layer.volume / step_size):
+                    #     dhw_m_flow = connection.corresponding_layer.volume / step_size
+                    #     sh_fraction = 0
+                    # else:
+                    #     sh_fraction = (connection.corresponding_layer.volume - (dhw_m_flow * step_size))/connection.corresponding_layer.volume
                 else:
                     dhw_m_flow = 0
-                    sh_fraction = 1
+                    # sh_fraction = 1
 
                 self.dhw_supply = dhw_m_flow * 4184 * (connection.T - self.dhw_in_T)
 
-                return sh_fraction, dhw_m_flow
+                # return sh_fraction, dhw_m_flow
+                return dhw_m_flow, connection.T
 
-    def calc_sh_supply(self, step_size,  hwt_connections, sh_fraction):
+    # def calc_sh_supply(self, step_size,  hwt_connections, sh_fraction):
+    def calc_sh_supply(self, hwt_connections):
 
         for key, connection in hwt_connections.items():
 
             if connection.type == 'sh_out':
                 if self.T_min <= connection.T <= self.T_max:
                     sh_m_flow = self.sh_demand/(4184 * self.sh_dT)
-                    if sh_fraction == 0:
-                        sh_m_flow = 0
-                    elif sh_m_flow > (sh_fraction * connection.corresponding_layer.volume / step_size):
-                        sh_m_flow = sh_fraction * connection.corresponding_layer.volume / step_size
+                    # if sh_fraction == 0:
+                    #     sh_m_flow = 0
+                    # elif sh_m_flow > (sh_fraction * connection.corresponding_layer.volume / step_size):
+                    #     sh_m_flow = sh_fraction * connection.corresponding_layer.volume / step_size
                 else:
                     sh_m_flow = 0
 
@@ -161,7 +184,7 @@ class Controller():
 
                 sh_in_T = connection.T - self.sh_dT
 
-                return sh_m_flow, sh_in_T
+                return sh_m_flow, sh_in_T, connection.T
 
     def get_hp_out_T (self, hwt_connections):
 

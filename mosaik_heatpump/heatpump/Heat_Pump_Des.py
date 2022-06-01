@@ -20,6 +20,7 @@ import logging
 #                       screen_level=logging.ERROR,
 #                       file_level=logging.DEBUG)
 JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'eta_s_data.json'))
+COP_M_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'cop_m_data.json'))
 
 
 class Heat_Pump_Des():
@@ -51,6 +52,9 @@ class Heat_Pump_Des():
         self.heatload_des = None
 
         self.cmp_stages = 1
+
+        self.ic = False
+        self.sh = False
 
         self.idx = None
         self.nw = None
@@ -173,7 +177,12 @@ class Heat_Pump_Des():
         elif 'air_16kw' in self.hp_model.lower():
             params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 15}
         elif 'air_60kw' in self.hp_model.lower():
-            params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'ttd_u': 15}
+            params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'ttd_u': 15, 'pr': 2}
+            self.cmp_stages = 2
+            self.ic = True
+            self.sh = True
+        elif 'air_30kw' in self.hp_model.lower():
+            params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0, 'ttd_u': 5, 'pr': 1.75}
             self.cmp_stages = 2
         elif 'water' in self.hp_model.lower():
             params_des = {'ref': 'R407c', 'm_air': 0, 'm_water': 1, 'ttd_u': 23}
@@ -186,14 +195,15 @@ class Heat_Pump_Des():
         # %% components
 
         # sources & sinks
-        cc = CycleCloser('coolant cycle closer')
+        cool_closer = CycleCloser('coolant cycle closer')
         cons_closer = CycleCloser('consumer cycle closer')
         amb_in = Source('source ambient')
         amb_out = Sink('sink ambient')
 
         if self.cmp_stages == 2:
-            ic_in = Source('source intercool')
-            ic_out = Sink('sink intercool')
+            if self.ic is True:
+                ic_in = Source('source intercool')
+                ic_out = Sink('sink intercool')
 
         # ambient air system
         apu = Pump('ambient pump')
@@ -211,22 +221,23 @@ class Heat_Pump_Des():
         ev = HeatExchanger('evaporator')
         erp = Pump('evaporator recirculation pump')
 
-        if self.cmp_stages == 2:
-            su = HeatExchanger('superheater')
+        if self.sh is True:
+                su = HeatExchanger('superheater')
 
         # compressor-system
 
-        cp1 = Compressor('compressor')
+        cp1 = Compressor('compressor 1')
 
         if self.cmp_stages == 2:
             cp2 = Compressor('compressor 2')
-            he = HeatExchanger('intercooler')
+            if self.ic is True:
+                he = HeatExchanger('intercooler')
 
         # %% connections
 
         # consumer system
 
-        c_in_cd = Connection(cc, 'out1', cd, 'in1')
+        c_in_cd = Connection(cool_closer, 'out1', cd, 'in1')
         close_crp = Connection(cons_closer, 'out1', crp, 'in1')
         crp_cd = Connection(crp, 'out1', cd, 'in2')
         cd_cons = Connection(cd, 'out2', cons, 'in1')
@@ -255,28 +266,36 @@ class Heat_Pump_Des():
 
         self.nw.add_conns(amb_in_apu, ev_amb_out)
 
-        if self.cmp_stages == 2:
+        if self.sh is True:
             dr_su = Connection(dr, 'out2', su, 'in2')
             apu_su = Connection(apu, 'out1', su, 'in1')
             su_ev = Connection(su, 'out1', ev, 'in1')
             su_cp1 = Connection(su, 'out2', cp1, 'in1')
             self.nw.add_conns(dr_su, apu_su, su_ev, su_cp1)
         else:
-            dr_cp = Connection(dr, 'out2', cp1, 'in1')
-            cp_cc = Connection(cp1, 'out1', cc, 'in1')
+            dr_cp1 = Connection(dr, 'out2', cp1, 'in1')
+
             apu_ev = Connection(apu, 'out1', ev, 'in1')
 
-            self.nw.add_conns(dr_cp, cp_cc, apu_ev)
+            self.nw.add_conns(dr_cp1, apu_ev)
 
-        if self.cmp_stages == 2:
+        if self.ic is True:
             cp1_he = Connection(cp1, 'out1', he, 'in1')
             he_cp2 = Connection(he, 'out1', cp2, 'in1')
-            cp2_cc = Connection(cp2, 'out1', cc, 'in1')
+            cp2_cc = Connection(cp2, 'out1', cool_closer, 'in1')
 
             ic_in_he = Connection(ic_in, 'out1', he, 'in2')
             he_ic_out = Connection(he, 'out2', ic_out, 'in1')
 
             self.nw.add_conns(cp1_he, he_cp2, ic_in_he, he_ic_out, cp2_cc)
+        else:
+            if self.cmp_stages == 2:
+                cp1_cp2 = Connection(cp1, 'out1', cp2, 'in1')
+                cp2_cc = Connection(cp2, 'out1', cool_closer, 'in1')
+                self.nw.add_conns(cp1_cp2, cp2_cc)
+            else:
+                cp1_cc = Connection(cp1, 'out1', cool_closer, 'in1')
+                self.nw.add_conns(cp1_cc)
 
         # %% component parametrization
 
@@ -293,13 +312,13 @@ class Heat_Pump_Des():
         kA_char1 = ldc('heat exchanger', 'kA_char1', 'DEFAULT', CharLine)
         kA_char2 = ldc('heat exchanger', 'kA_char2', 'EVAPORATING FLUID', CharLine)
 
-        ev.set_attr(pr1=0.99, pr2=0.99, ttd_l=2,
+        ev.set_attr(pr1=0.99, pr2=0.99, ttd_l=5,
                     kA_char1=kA_char1, kA_char2=kA_char2,
                     design=['pr1', 'ttd_l'], offdesign=['zeta1', 'kA_char'])
         erp.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
         apu.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
 
-        if self.cmp_stages == 2:
+        if self.sh is True:
             su.set_attr(pr1=0.99, pr2=0.99, ttd_u=2, design=['pr1', 'pr2', 'ttd_u'],
                         offdesign=['zeta1', 'zeta2', 'kA_char'])
         # compressor system
@@ -307,8 +326,9 @@ class Heat_Pump_Des():
         cp1.set_attr(eta_s=self.etas_des, design=['eta_s'], offdesign=['eta_s_char'])
 
         if self.cmp_stages == 2:
-            cp2.set_attr(eta_s=0.8, pr=2, design=['eta_s'], offdesign=['eta_s_char'])
+            cp2.set_attr(eta_s=self.etas_des, pr=params_des['pr'], design=['eta_s'], offdesign=['eta_s_char'])
 
+        if self.ic is True:
             he.set_attr(pr1=0.98, pr2=0.98, design=['pr1', 'pr2'],
                         offdesign=['zeta1', 'zeta2', 'kA_char'])
         # %% connection parametrization
@@ -327,6 +347,12 @@ class Heat_Pump_Des():
 
         erp_ev.set_attr(m=Ref(va_dr, 1.15, 0), p0=6.5)
 
+        if self.sh is False:
+            dr_cp1.set_attr(state='g')
+        else:
+            dr_su.set_attr(state='g')
+
+
         # evaporator system hot side
 
         # pumping at constant rate in partload
@@ -335,16 +361,18 @@ class Heat_Pump_Des():
                                    'air': params_des['m_air']
                                    }
                             )
-        if self.cmp_stages == 2:
-            su_cp1.set_attr(state='g')
+        if self.sh is True:
+            # su_cp1.set_attr(state='g')
             apu_su.set_attr(p=1.0001)
+        else:
+            apu_ev.set_attr(p=1.0001)  # check this
+        if self.ic is True:
             he_cp2.set_attr(T=(self.LWC_des-5), p0=10)
             ic_in_he.set_attr(p=1.5, T=7, fluid={'water': params_des['m_water'], params_des['ref']: 0,
                                                  'air': params_des['m_air']})
             he_ic_out.set_attr(T=(self.LWC_des-10), design=['T'])
         else:
-            apu_ev.set_attr(p=1.0001)  # check this
-            dr_cp.set_attr(p0=6.5, h0=400)
+            dr_cp1.set_attr(p0=6.5, h0=400)
         # ev_amb_out.set_attr(T=self.LWE_des, design=['T'])
         ev_amb_out.set_attr(T=self.LWE_des)
 
@@ -362,7 +390,7 @@ class Heat_Pump_Des():
 
     def p_cop_calc(self):
 
-        self.P_cons = (self.nw.get_comp('compressor').P.val +
+        self.P_cons = (self.nw.get_comp('compressor 1').P.val +
                        self.nw.get_comp('evaporator recirculation pump').P.val +
                        self.nw.get_comp('condenser recirculation pump').P.val +
                        self.nw.get_comp('ambient pump').P.val
@@ -463,9 +491,14 @@ class Heat_Pump_Des():
 
                     if id_old != self.idx:
                         try:
+                            # print('designing hp')
                             self._design_hp()
                         except:
                             self.step_error()
+                        self.p_cop_calc()
+                        # print('P : ', self.P_cons)
+                        # print('COP : ', self.COP)
+                        # print('cond_m :', self.cond_m)
 
                     if not self.skip_step:
                         self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
@@ -498,23 +531,29 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        'hp_model': 'Air_60kW',
+        'hp_model': 'Air_30kW',
         'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
-        'Q_Demand': 60100,
-        'calc_mode': 'detailed'
+        'Q_Demand': 32500,
+        'calc_mode': 'fast',
     }
 
-    heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
+    with open(COP_M_DATA_FILE, "r") as read_file_1:
+        COP_m_data_all = json.load(read_file_1)
+        COP_m_data = COP_m_data_all[params_air['hp_model']]
+    heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=COP_m_data)
+    # heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
-    inputs_air_1 = {'heat_source_T': 8, 'Q_Demand': 48500, 'cond_in_T': 30, 'T_amb': 8}
+
+    inputs_air_1 = {'heat_source_T': 6.22, 'Q_Demand': 280490, 'cond_in_T': 42.68, 'T_amb': 6.22}
 
     heat_pump_1.step(inputs_air_1)
 
     print('P : ', heat_pump_1.P_cons)
     print('COP : ', heat_pump_1.COP)
     print('cond_m :',  heat_pump_1.cond_m)
+    print('eta_s : ', heat_pump_1.etas_des)
     # print('cond_m : ', heat_pump_1.nw.get_conn('condenser:out2_consumer:in1').m.val)
 
     # inputs_air_2 = {'heat_source_T': 7, 'Q_Demand': 15220, 'cons_T': 45}

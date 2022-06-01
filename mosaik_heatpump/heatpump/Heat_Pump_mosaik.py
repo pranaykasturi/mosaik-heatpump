@@ -11,7 +11,7 @@ META = {
             'public': True,
             'params': ['params'],
             'attrs': ['Q_Demand', 'Q_Supplied', 'heat_source_T', 'heat_source', 'cons_T', 'P_Required', 'COP',
-                      'cond_m', 'cond_in_T', 'T_amb', 'on_fraction'],
+                      'cond_m', 'cond_in_T', 'T_amb', 'on_fraction', 'cond_m_neg'],
         },
     },
 }
@@ -50,7 +50,7 @@ class HeatPumpSimulator(mosaik_api.Simulator):
                 self.processes = num
 
         COP_m_data = None
-        if params['calc_mode'] == 'fast' or params['calc_mode'] == 'fixed':
+        if params['calc_mode'] == 'fast' or params['calc_mode'] == 'fixed_hl':
             with open(JSON_COP_DATA, "r") as read_file_1:
                 COP_m_data_all = json.load(read_file_1)
                 COP_m_data = COP_m_data_all[params['hp_model']]
