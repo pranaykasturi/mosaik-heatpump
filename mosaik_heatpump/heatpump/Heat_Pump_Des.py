@@ -81,6 +81,8 @@ class Heat_Pump_Des():
                                                     p_th=self.Q_Demand)
             else:
                 parameters = hpl.get_parameters(self.hp_model)
+                if self.hp_model == 'LW 300(L)':
+                    self.hp_model = 'Air_30kW_1stage'
 
             self.hp = hpl.HeatPump(parameters)
 
@@ -115,54 +117,65 @@ class Heat_Pump_Des():
         heat_source_T_min = min(list(map(int, etas_dict)))
         heat_source_T_max = max(list(map(int, etas_dict)))
 
-        if 'air' in self.hp_model.lower():
-            if heat_source_T_min <= self.heat_source_T <= heat_source_T_max:
-                idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T))
-                self.heat_source_T_des = idx_T
-                self.LWE_des = self.heat_source_T_des - 5
-            else:
-                self.skip_step = True
-        else:
-            if heat_source_T_min <= (self.heat_source_T-5) <= heat_source_T_max:
-                idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T - 5))
-                self.LWE_des = idx_T
-                self.heat_source_T_des = self.LWE_des + 5
-            else:
-                self.skip_step = True
+        self.skip_step = False
+
+        if self.heat_source_T > self.cond_in_T:
+            self.skip_step = True
 
         if not self.skip_step:
-            cons_T_min = min(list(map(int, etas_dict[str(idx_T)])))
-            self.cons_T_max = max(list(map(int, etas_dict[str(idx_T)])))
 
-            cons_T_des = self.cond_in_T + 5
-
-            if cons_T_des < cons_T_min:
-                self.skip_step = True
-            elif cons_T_des > self.cons_T_max:
-                if self.cond_in_T < self.cons_T_max:
-                    cons_T_des = self.cons_T_max
+            if 'air' in self.heat_source.lower():
+                if heat_source_T_min <= self.heat_source_T <= heat_source_T_max:
+                    idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T))
+                    self.heat_source_T_des = idx_T
+                    self.LWE_des = self.heat_source_T_des - 5
+                else:
+                    self.skip_step = True
+            else:
+                if heat_source_T_min <= (self.heat_source_T-5) <= heat_source_T_max:
+                    idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T - 5))
+                    self.LWE_des = idx_T
+                    self.heat_source_T_des = self.LWE_des + 5
                 else:
                     self.skip_step = True
 
-            self.LWC_des = self._take_closest(list(map(int, etas_dict[str(idx_T)])), cons_T_des)
+            if not self.skip_step:
 
-            self.etas_des = etas_dict[str(idx_T)][str(self.LWC_des)]
+                clean_dict = {k: etas_dict[str(idx_T)][k] for k in etas_dict[str(idx_T)] if
+                              etas_dict[str(idx_T)][k] is not None}
 
-            heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)]
+                cons_T_min = min(list(map(int, clean_dict)))
+                self.cons_T_max = max(list(map(int, clean_dict)))
 
-            if heatload_des is None:
-                self.skip_step = True
-                self.heatload_des = 0
-                self.heatload_max = 0
-                self.heatload_min = 0
+                cons_T_des = self.cond_in_T + 5
 
-            else:
-                self.heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)] * 1000
-                self.heatload_max = self.heatload_des
-                self.heatload_min = data_1[self.hp_model]['min_heatload']
+                if cons_T_des < cons_T_min:
+                    self.skip_step = True
+                elif cons_T_des > self.cons_T_max:
+                    if self.cond_in_T < self.cons_T_max:
+                        cons_T_des = self.cons_T_max
+                    else:
+                        self.skip_step = True
+
+                self.LWC_des = self._take_closest(list(map(int, etas_dict[str(idx_T)])), cons_T_des)
+
+                self.etas_des = etas_dict[str(idx_T)][str(self.LWC_des)]
+
+                heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)]
+
+                if heatload_des is None:
+                    self.skip_step = True
+                    self.heatload_des = 0
+                    self.heatload_max = 0
+                    self.heatload_min = 0
+
+                else:
+                    self.heatload_des = heatload_des * 1000
+                    self.heatload_max = self.heatload_des
+                    self.heatload_min = data_1[self.hp_model]['min_heatload']
 
 
-            self.idx = id_dict[str(idx_T)][str(self.LWC_des)]
+                self.idx = id_dict[str(idx_T)][str(self.LWC_des)]
 
 
 
@@ -182,8 +195,12 @@ class Heat_Pump_Des():
             self.ic = True
             self.sh = True
         elif 'air_30kw' in self.hp_model.lower():
-            params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0, 'ttd_u': 5, 'pr': 1.75}
-            self.cmp_stages = 2
+            params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0, 'ttd_u': 5, 'pr': 1.35}
+            if '1stage' not in self.hp_model.lower():
+                self.cmp_stages = 2
+        #     self.cmp_stages = 2
+        # elif 'air_30kw_1stage' in self.hp_model.lower():
+        #     params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0, 'ttd_u': 5, 'pr': 1.35}
         elif 'water' in self.hp_model.lower():
             params_des = {'ref': 'R407c', 'm_air': 0, 'm_water': 1, 'ttd_u': 23}
 
@@ -222,7 +239,7 @@ class Heat_Pump_Des():
         erp = Pump('evaporator recirculation pump')
 
         if self.sh is True:
-                su = HeatExchanger('superheater')
+            su = HeatExchanger('superheater')
 
         # compressor-system
 
@@ -401,7 +418,7 @@ class Heat_Pump_Des():
 
         self.COP = -self.nw.get_comp('consumer').Q.val / self.P_cons
 
-        if self.COP < 1 or self.COP > 6:
+        if self.COP < 1 or self.COP > 15:
             self.step_error()
 
     def step(self, inputs):
@@ -427,26 +444,46 @@ class Heat_Pump_Des():
 
         id_old = self.idx
 
+        if self.calc_mode == 'fixed':
+            self.heatload_min = 5000
+            self.heatload_max = 11040
+        elif self.calc_mode == 'hplib':
+            self.heatload_min = 0
+            self.cons_T_max = 65
+        else:
+            self._etas_heatload_id()
+
         if self.calc_mode == 'hplib':
-            results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
-                                       t_amb=self.T_amb, mode=1)
-            self.cond_m = round(results['m_dot'], 2)
-            self.COP = round(results['COP'], 2)
-            self.P_cons = round(results['P_el'], 2)
-            self.cons_T = round(results['T_out'], 2)
-            self.Q_Supplied = round(results['P_th'], 2)
-            if self.Q_Supplied > self.Q_Demand:
-                self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
-                self.Q_Supplied = self.Q_Demand
-                self.P_cons *= self.on_fraction
+
+            if self.Q_Demand < self.heatload_min:
+                self.skip_step = True
+
+            if self.cond_in_T > (self.cons_T_max - 5):
+                self.skip_step = True
+
+            if not self.skip_step:
+                results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
+                                           t_amb=self.T_amb, mode=1)
+                self.cond_m = round(results['m_dot'], 2)
+                self.COP = round(results['COP'], 2)
+                self.P_cons = round(results['P_el'], 2)
+                self.cons_T = round(results['T_out'], 2)
+                self.Q_Supplied = round(results['P_th'], 2)
+                if self.Q_Supplied > self.Q_Demand:
+                    self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
+                    self.Q_Supplied = self.Q_Demand
+                    self.P_cons *= self.on_fraction
+                    self.cond_m *= self.on_fraction
+            else:
+                self.step_error()
 
         else:
 
-            if self.calc_mode == 'fixed':
-                self.heatload_min = 5000
-                self.heatload_max = 11040
-            else:
-                self._etas_heatload_id()
+            # if self.calc_mode == 'fixed':
+            #     self.heatload_min = 5000
+            #     self.heatload_max = 11040
+            # else:
+            #     self._etas_heatload_id()
 
             if self.Q_Demand < self.heatload_min:
                 self.skip_step = True
@@ -531,12 +568,12 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        'hp_model': 'Air_30kW',
+        'hp_model': 'Air_30kW', #_1stage
         'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
-        'Q_Demand': 32500,
-        'calc_mode': 'fast',
+        'Q_Demand': 19780,
+        'calc_mode': 'detailed',
     }
 
     with open(COP_M_DATA_FILE, "r") as read_file_1:
@@ -546,7 +583,7 @@ if __name__ == '__main__':
     # heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
 
-    inputs_air_1 = {'heat_source_T': 6.22, 'Q_Demand': 280490, 'cond_in_T': 42.68, 'T_amb': 6.22}
+    inputs_air_1 = {'heat_source_T': 35, 'Q_Demand': 15800, 'cond_in_T': 35, 'T_amb': 35}
 
     heat_pump_1.step(inputs_air_1)
 
@@ -554,6 +591,7 @@ if __name__ == '__main__':
     print('COP : ', heat_pump_1.COP)
     print('cond_m :',  heat_pump_1.cond_m)
     print('eta_s : ', heat_pump_1.etas_des)
+    print('cmp_stages : ', heat_pump_1.cmp_stages)
     # print('cond_m : ', heat_pump_1.nw.get_conn('condenser:out2_consumer:in1').m.val)
 
     # inputs_air_2 = {'heat_source_T': 7, 'Q_Demand': 15220, 'cons_T': 45}
