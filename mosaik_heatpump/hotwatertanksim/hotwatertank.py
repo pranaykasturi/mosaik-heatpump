@@ -158,13 +158,14 @@ class HotWaterTank():
             diameter = (params['volume'] * 1e6 / (np.pi * self.height)) ** 0.5 * 2
 
         # only needed during initialization
-        self.surface_between_layers = np.pi * (diameter / 3e3) ** 2  # m2
+        self.surface_between_layers = np.pi * (diameter / 2e3) ** 2  # m2
 
         self.mass = np.pi * (diameter / 2e3) ** 2 * self.height
 
         # create layers
         self.layers = []
         if 'n_layers' in params:
+            n_layers = params['n_layers']
             if isinstance(init_vals['layers']['T'], list):
                 if len(init_vals['layers']['T']) == 2:  # temperature range
                     delta_T = init_vals['layers']['T'][1] - init_vals['layers']['T'][0]
@@ -216,6 +217,8 @@ class HotWaterTank():
                 layer_params['bottom_top'] = bottom_top
                 layer_params['T'] = T_init[idx]
                 self.layers.append(Layer(layer_params))
+
+        self.layer_height = self.height / n_layers / 1000
 
         # create connections
         self.connections = dict()
@@ -345,7 +348,7 @@ class HotWaterTank():
         for layer, upper_layer in zip(self.layers[:-1], self.layers[1:]):
             # boundary_surface = np.pi * (layer.diameter / 3e3)**2
             heatflow = ((layer.T - upper_layer.T)
-                        * self.surface_between_layers * self.htc_layers)
+                        * self.surface_between_layers * self.htc_layers) / self.layer_height
             upper_layer.add_heatflow(heatflow)
             layer.add_heatflow(-heatflow)
 
@@ -530,6 +533,8 @@ class Connection(object):
         self.pos = params['pos']
         if 'type' in params:
             self.type = params['type']
+        if 'T_sp' in params:
+            self.T_sp = params['T_sp']
         self._F = 0  # flow [l/s]
         self._T = None  # °C
         self._T_buffer = []  # °C
@@ -546,13 +551,20 @@ class Connection(object):
                 if adapted_step_size_mode:
                     self._T_buffer.append(self.corresponding_layer.T)
             else:  # if self.F > 0:
-                delta_T_min = float('Inf')  # smallest difference so far
-                for idx, layer in enumerate(self.layers):
-                    delta_T = abs(self._T - layer.T)
-                    if delta_T < delta_T_min:
-                        delta_T_min = delta_T
-                        idx_min = idx
-                self.corresponding_layer = self.layers[idx_min]
+                if self.type != 'dhw_in':
+                    delta_T_min = float('Inf')  # smallest difference so far
+                    for idx, layer in enumerate(self.layers):
+                        delta_T = abs(self._T - layer.T)
+                        if delta_T < delta_T_min:
+                            delta_T_min = delta_T
+                            idx_min = idx
+                    self.corresponding_layer = self.layers[idx_min]
+                else:
+                    if self.layers[0].T < self.T_sp:
+                        self.corresponding_layer = self.layers[2]
+                    else:
+                        self.corresponding_layer = self.layers[0]
+
         except TypeError:
             self.corresponding_layer = self.corresponding_layer_pos
 
