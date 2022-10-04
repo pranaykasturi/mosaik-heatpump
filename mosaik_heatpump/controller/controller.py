@@ -51,6 +51,14 @@ class Controller():
 
         self.T_hp_sp_h = params.get('T_hp_sp_h')
         self.T_hp_sp_l = params.get('T_hp_sp_l')
+
+        # self.T_hp_sp_h = None
+        # self.T_hp_sp_l = None
+        # self.T_hp_sp_h_1 = params.get('T_hp_sp_h_1')
+        # self.T_hp_sp_h_2 = params.get('T_hp_sp_h_2')
+        # self.T_hp_sp_l_1 = params.get('T_hp_sp_l_1')
+        # self.T_hp_sp_l_2 = params.get('T_hp_sp_l_2')
+
         self.T_hr_sp = params.get('T_hr_sp')
         self.T_hr_sp_dhw = params.get('T_hr_sp_dhw')
         self.T_hr_sp_sh = params.get('T_hr_sp_sh')
@@ -129,6 +137,13 @@ class Controller():
             # else:
             #     self.hp_demand = 0
             #
+            # if self.heat_source_T > (self.T_amb + 2):
+            #     self.T_hp_sp_h = self.T_hp_sp_h_2
+            #     self.T_hp_sp_l = self.T_hp_sp_l_2
+            # else:
+            #     self.T_hp_sp_h = self.T_hp_sp_h_1
+            #     self.T_hp_sp_l = self.T_hp_sp_l_1
+
             if self.top_layer_T < self.T_hp_sp_h:
                 self.hp_status = 'on'
             #
