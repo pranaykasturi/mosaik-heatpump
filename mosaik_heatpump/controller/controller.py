@@ -80,6 +80,16 @@ class Controller():
             self.sh_demand *= 1000
         if self.dhw_demand is None or self.dhw_demand < 0:
             self.dhw_demand = 0
+        # if self.dhw_out_T is None:
+        #     self.dhw_out_T = 0
+        # if self.sh_out_T is None:
+        #     self.sh_out_T = 0
+        # if self.hp_cond_m is None:
+        #     self.hp_cond_m = 0
+        # if self.hp_on_fraction is None:
+        #     self.hp_on_fraction = 0
+        # if self.hp_out_T is None:
+        #     self.hp_out_T = 0
 
         # if self.hwt_connections is not None:
         #     hwt_connections = jsonpickle.decode((self.hwt_connections))
@@ -144,6 +154,7 @@ class Controller():
             #     self.T_hp_sp_h = self.T_hp_sp_h_1
             #     self.T_hp_sp_l = self.T_hp_sp_l_1
 
+            # if self.top_layer_T is not None and (self.top_layer_T < self.T_hp_sp_h):
             if self.top_layer_T < self.T_hp_sp_h:
                 self.hp_status = 'on'
             #
@@ -181,8 +192,11 @@ class Controller():
             #print('hp_supply is None')
             self.hp_supply = 0
 
-        self.hp_in_F = self.hp_on_fraction * self.hp_cond_m
-        self.hp_out_F = -self.hp_on_fraction * self.hp_cond_m
+
+        if self.hp_on_fraction is not None and self.hp_cond_m is not None:
+            self.hp_in_F = self.hp_on_fraction * self.hp_cond_m
+            self.hp_out_F = -self.hp_on_fraction * self.hp_cond_m
+
             
         if self.T_hr_sp is not None:
             if self.T_mean < self.T_hr_sp:

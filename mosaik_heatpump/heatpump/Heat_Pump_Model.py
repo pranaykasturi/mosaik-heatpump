@@ -38,6 +38,7 @@ class Heat_Pump_State():
         self.cond_m = 0
         """The mass flow rate of water in the condenser of the heat pump (in kg/s)"""
         self.cond_m_neg = 0
+        self.step_executed = False
 
 
 class Heat_Pump_Inputs():
@@ -145,4 +146,5 @@ class Heat_Pump():
         self.state.cond_m = self.design.Heat_Pump.cond_m
         self.state.cond_m_neg = - self.design.Heat_Pump.cond_m
         self.state.cons_T = self.design.Heat_Pump.cons_T
+        self.state.step_executed = True
 

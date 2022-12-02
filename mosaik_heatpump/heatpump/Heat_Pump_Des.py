@@ -477,108 +477,111 @@ class Heat_Pump_Des():
         else:
             self._etas_heatload_id()
 
-        if 'hplib' in self.calc_mode:
+        if not self.skip_step:
+            if 'hplib' in self.calc_mode:
 
-            if self.Q_Demand < self.heatload_min:
-                self.skip_step = True
+                if self.Q_Demand < self.heatload_min:
+                    self.skip_step = True
 
-            if self.cond_in_T > (self.cons_T_max - 5):
-                self.skip_step = True
+                if self.cond_in_T > (self.cons_T_max - 5):
+                    self.skip_step = True
 
-            if not self.skip_step:
-                results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
-                                           t_amb=self.T_amb, mode=1)
-                self.cond_m = round(results['m_dot'], 2)
-                self.COP = round(results['COP'], 2)
-                self.P_cons = round(results['P_el'], 2)
-                self.cons_T = round(results['T_out'], 2)
-                self.Q_Supplied = round(results['P_th'], 2)
-                if self.Q_Supplied > self.Q_Demand:
-                    self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
+                if not self.skip_step:
+                    results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
+                                               t_amb=self.T_amb, mode=1)
+                    self.cond_m = round(results['m_dot'], 2)
+                    self.COP = round(results['COP'], 2)
+                    self.P_cons = round(results['P_el'], 2)
+                    self.cons_T = round(results['T_out'], 2)
+                    self.Q_Supplied = round(results['P_th'], 2)
+                    if self.Q_Supplied > self.Q_Demand:
+                        self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
+                        self.Q_Supplied = self.Q_Demand
+                        self.P_cons *= self.on_fraction
+                        self.cond_m *= self.on_fraction
+                else:
+                    self.step_error()
+
+            else:
+
+                # if self.calc_mode == 'fixed':
+                #     self.heatload_min = 5000
+                #     self.heatload_max = 11040
+                # else:
+                #     self._etas_heatload_id()
+
+                if self.Q_Demand < self.heatload_min:
+                    self.skip_step = True
+                elif self.Q_Demand > self.heatload_max:
+                    self.Q_Supplied = self.heatload_max
+                    Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
+                else:
                     self.Q_Supplied = self.Q_Demand
-                    self.P_cons *= self.on_fraction
-                    self.cond_m *= self.on_fraction
-            else:
-                self.step_error()
+                    Q_Supply_Excess = self.heatload_max - self.Q_Supplied
 
-        else:
+                if not self.skip_step:
 
-            # if self.calc_mode == 'fixed':
-            #     self.heatload_min = 5000
-            #     self.heatload_max = 11040
-            # else:
-            #     self._etas_heatload_id()
+                    if self.calc_mode == 'fast':
+                        heat_source_T_idx = str(self._take_closest(list(map(int, self.COP_m_data.keys())), self.heat_source_T))
+                        cond_in_T_idx = str(self._take_closest(list(map(int, self.COP_m_data[heat_source_T_idx].keys())),
+                                                               self.cond_in_T))
+                        HL_idx = str(self._take_closest(list(map(float, self.COP_m_data[heat_source_T_idx][cond_in_T_idx].keys())),
+                                                        self.Q_Supplied))
+                        try:
+                            self.cond_m = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['cond_m']
+                            self.COP = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['COP']
+                        except:
+                            self.step_error()
 
-            if self.Q_Demand < self.heatload_min:
-                self.skip_step = True
-            elif self.Q_Demand > self.heatload_max:
-                self.Q_Supplied = self.heatload_max
-                Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
-            else:
-                self.Q_Supplied = self.Q_Demand
-                Q_Supply_Excess = self.heatload_max - self.Q_Supplied
+                        if self.cond_m > 0:
+                            self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
+                            if self.cons_T > self.cons_T_max:
+                                self.cons_T = self.cons_T_max
+                                self.Q_Supplied = self.cond_m * 4184 * (self.cons_T - self.cond_in_T)
+                            self.P_cons = self.Q_Supplied/self.COP
+                            self.Q_evap = -(self.Q_Supplied - self.P_cons -50)
+                        else:
+                            self.step_error()
 
-            if not self.skip_step:
+                    elif self.calc_mode == 'fixed':
 
-                if self.calc_mode == 'fast':
-                    heat_source_T_idx = str(self._take_closest(list(map(int, self.COP_m_data.keys())), self.heat_source_T))
-                    cond_in_T_idx = str(self._take_closest(list(map(int, self.COP_m_data[heat_source_T_idx].keys())),
-                                                           self.cond_in_T))
-                    HL_idx = str(self._take_closest(list(map(float, self.COP_m_data[heat_source_T_idx][cond_in_T_idx].keys())),
-                                                    self.Q_Supplied))
-                    try:
-                        self.cond_m = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['cond_m']
-                        self.COP = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['COP']
-                    except:
-                        self.step_error()
-
-                    if self.cond_m > 0:
+                        self.cond_m = 0.52
+                        self.COP = 2
                         self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
-                        if self.cons_T > self.cons_T_max:
-                            self.cons_T = self.cons_T_max
-                            self.Q_Supplied = self.cond_m * 4184 * (self.cons_T - self.cond_in_T)
                         self.P_cons = self.Q_Supplied/self.COP
-                        self.Q_evap = -(self.Q_Supplied - self.P_cons -50)
-                    else:
-                        self.step_error()
 
-                elif self.calc_mode == 'fixed':
+                    elif self.calc_mode == 'detailed':
 
-                    self.cond_m = 0.52
-                    self.COP = 2
-                    self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
-                    self.P_cons = self.Q_Supplied/self.COP
-
-                elif self.calc_mode == 'detailed':
-
-                    if id_old != self.idx:
-                        try:
-                            # print('designing hp')
-                            self._design_hp()
-                        except:
-                            self.step_error()
-                        self.p_cop_calc()
-                        # print('P : ', self.P_cons)
-                        # print('COP : ', self.COP)
-                        # print('cond_m :', self.cond_m)
-
-                    if not self.skip_step:
-                        self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
-                        self.nw.get_conn('consumer cycle closer:out1_condenser recirculation pump:in1').set_attr(T=self.cond_in_T)
-                        if 'fixed_evap_m' not in self.hp_model.lower():
-                            self.LWE = self.heat_source_T - 5
-                            self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LWE)
-                        self.nw.get_comp('consumer').set_attr(Q=-self.Q_Supplied)
-                        try:
-                            self.nw.solve('offdesign', design_path='heat_pump')
-                            self.cond_m = self.nw.get_conn('condenser:out2_consumer:in1').m.val
-                            self.cons_T = self.nw.get_conn('condenser:out2_consumer:in1').T.val
+                        if id_old != self.idx:
+                            try:
+                                # print('designing hp')
+                                self._design_hp()
+                            except:
+                                self.step_error()
                             self.p_cop_calc()
-                        except:
-                            self.step_error()
+                            # print('P : ', self.P_cons)
+                            # print('COP : ', self.COP)
+                            # print('cond_m :', self.cond_m)
 
-            else:
-                self.step_error()
+                        if not self.skip_step:
+                            self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
+                            self.nw.get_conn('consumer cycle closer:out1_condenser recirculation pump:in1').set_attr(T=self.cond_in_T)
+                            if 'fixed_evap_m' not in self.hp_model.lower():
+                                self.LWE = self.heat_source_T - 5
+                                self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LWE)
+                            self.nw.get_comp('consumer').set_attr(Q=-self.Q_Supplied)
+                            try:
+                                self.nw.solve('offdesign', design_path='heat_pump')
+                                self.cond_m = self.nw.get_conn('condenser:out2_consumer:in1').m.val
+                                self.cons_T = self.nw.get_conn('condenser:out2_consumer:in1').T.val
+                                self.p_cop_calc()
+                            except:
+                                self.step_error()
+
+                else:
+                    self.step_error()
+        else:
+            self.step_error()
 
     def step_error(self):
         self.skip_step = True
