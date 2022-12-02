@@ -21,15 +21,19 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
         self.step_size = None  # [sec]
         self.async_requests = dict()
         self.i=0
+        self.time = None
+        self.first_iteration = None
+        self.step_executed = False
 
-    def init(self, sid, time_resolution, step_size, config):
+    def init(self, sid, time_resolution, step_size, config, same_time_loop=False):
         self.time_resolution = float(time_resolution)
         if self.time_resolution != 1.0:
             print('WARNING: %s got a time_resolution other than 1.0, which \
                 can not be handled by this simulator.', sid)
         self.sid = sid  # simulator id
         self.step_size = step_size
-        attrs = ['_', 'snapshot', 'sh_supply', 'sh_demand', 'dhw_demand', 'dhw_supply', 'hp_demand', 'T_env', 'T_mean', 'mass']
+        attrs = ['_', 'snapshot', 'sh_supply', 'sh_demand', 'dhw_demand', 'dhw_supply', 'hp_demand', 'T_env', 'T_mean',
+                 'mass', 'step_executed']
         if 'n_sensors' in config:
             for i in range(config['n_sensors']):
                 attrs.append('sensor_%02d.T' % i)
@@ -53,7 +57,10 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
             'params': ['params', 'init_vals', 'snapshot'],
             'attrs': attrs
         }
-            
+
+        if same_time_loop:
+            self.meta['type'] = 'event-based'
+
         return self.meta
     
     def create(self, num, model, params=None, init_vals=None, snapshot=None):
@@ -84,6 +91,14 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
     def step(self, time, inputs, max_advance):
 
         # print('hwt inputs: %s' % inputs)
+        print(f"Stepping HWT at {time}")
+        if self.meta['type'] == 'event-based':
+            if self.time != time:
+                self.first_iteration = True
+                self.step_executed = False
+            else:
+                self.first_iteration = False
+            self.time = time
         for eid, attrs in inputs.items():
             for attr, src_ids in attrs.items():
                 if attr == '_':
@@ -91,9 +106,15 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
                 else:
                     for  src_id, val in src_ids.items():
                         set_nested_attr(self.models[eid], attr, val)
-
-        for eid, model in self.models.items():
-            model.step(self.step_size)
+        if self.meta['type'] == 'event-based':
+            if not self.first_iteration and not self.step_executed:
+                for eid, model in self.models.items():
+                    # print(f"Stepping Hotwatertank at {time}")
+                    model.step(self.step_size)
+                    self.step_executed = True
+        else:
+            for eid, model in self.models.items():
+                model.step(self.step_size)
 
         inputs = {}
         # print('async_reqs: %s' % self.async_requests)
@@ -109,7 +130,11 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
         # print('hwt inputs: %s' % inputs)
         yield self.mosaik.set_data(inputs)
 
-        return (time + self.step_size)
+        if self.meta['type'] == 'event-based':
+            if self.step_executed and (time + self.step_size) <= self.mosaik.world.until:  #
+                return (time + self.step_size)
+        else:
+            return (time + self.step_size)
 
     def get_data(self, outputs):
         data = {}
@@ -119,6 +144,8 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
                 if attr not in self.meta['models']['HotWaterTank'][
                         'attrs']:
                     raise ValueError('Unknown output attribute: %s' % attr)
+                if self.meta['type'] == 'event-based':
+                    data['time'] = self.time
                 data[eid][attr] = get_nested_attr(self.models[eid], attr)
         return data
 
