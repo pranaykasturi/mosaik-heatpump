@@ -11,7 +11,7 @@ META = {
                       'dhw_demand', 'dhw_supply', 'sh_in_F', 'sh_in_T', 'sh_out_F', 'dhw_in_F', 'dhw_in_T', 'dhw_out_F',
                       'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T', 'hp_supply', 'hwt_connections', 'T_mean', 'hwt_mass',
                       'hwt_hr_P_th_set', 'hp_on_fraction', 'hp_cond_m', 'sh_out_T', 'dhw_out_T', 'P_hr_sh', 'P_hr_dhw',
-                      'T_room', 'bottom_layer_T', 'top_layer_T', 'execute_step'],
+                      'T_room', 'bottom_layer_T', 'top_layer_T', 'execute_step', 'PVT_T_in', 'PVT_T_out'],
             # 'attrs': ['outside_temperature', 'sh_demand', 'sh_supply', 'dhw_demand', 'dhw_supply', 'hp_demand'],
         },
     },
@@ -73,7 +73,7 @@ class ControllerSimulator(mosaik_api.Simulator):
 
     def step(self, time, inputs, max_advance):
         # print('controller inputs: %s' % inputs)
-        print(f"Stepping Controller at {time}")
+        # print(f"Stepping Controller at {time}")
         if self.meta['type'] == 'event-based':
             if self.time != time:
                 # self.time = time

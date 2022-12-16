@@ -68,6 +68,8 @@ class Controller():
         self.sh_dT = params.get('sh_dT')
         self.operation_mode = params.get('operation_mode')
 
+        self.PVT_T_in = None
+        self.PVT_T_out = None
         self.new_hp_sp = False
 
     def step(self):
@@ -122,39 +124,19 @@ class Controller():
 
         if self.operation_mode.lower() == 'heating':
 
-            # if self.T_amb > 15:
-            #     if self.hp_in_T < 35:
-            #     if not self.new_hp_sp:
-            #         self.T_hp_sp_l += 5
-            #         self.T_hp_sp_h += 5
-            #         self.new_hp_sp = True
-            # else:
-            #     if self.new_hp_sp:
-            #         self.T_hp_sp_l -= 5
-            #         self.T_hp_sp_h -= 5
-            #         self.new_hp_sp = False
-
-            # if self.hp_out_T < self.T_hp_sp_l:
-            #     self.hp_status = 'on'
-            # #
-            #
-            # if self.hp_status == 'on':
-            #     if self.hp_out_T < self.T_hp_sp_h:
-            #         self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_h - self.hp_out_T) / self.step_size
-            #     else:
-            #         self.hp_demand = 0
-            #         self.hp_status = 'off'
-            # else:
-            #     self.hp_demand = 0
-            #
             # if self.heat_source_T > (self.T_amb + 2):
-            #     self.T_hp_sp_h = self.T_hp_sp_h_2
-            #     self.T_hp_sp_l = self.T_hp_sp_l_2
-            # else:
-            #     self.T_hp_sp_h = self.T_hp_sp_h_1
-            #     self.T_hp_sp_l = self.T_hp_sp_l_1
+            if self.PVT_T_out > (self.PVT_T_in + 2):
+                # if self.hp_in_T < 35:
+                if not self.new_hp_sp:
+                    self.T_hp_sp_l += 7
+                    self.T_hp_sp_h += 7
+                    self.new_hp_sp = True
+            else:
+                if self.new_hp_sp:
+                    self.T_hp_sp_l -= 7
+                    self.T_hp_sp_h -= 7
+                    self.new_hp_sp = False
 
-            # if self.top_layer_T is not None and (self.top_layer_T < self.T_hp_sp_h):
             if self.top_layer_T < self.T_hp_sp_h:
                 self.hp_status = 'on'
             #
@@ -167,6 +149,27 @@ class Controller():
                     self.hp_status = 'off'
             else:
                 self.hp_demand = 0
+
+            # if self.heat_source_T > (self.T_amb + 2):
+            #     self.T_hp_sp_h = self.T_hp_sp_h_2
+            #     self.T_hp_sp_l = self.T_hp_sp_l_2
+            # else:
+            #     self.T_hp_sp_h = self.T_hp_sp_h_1
+            #     self.T_hp_sp_l = self.T_hp_sp_l_1
+
+            # if self.top_layer_T is not None and (self.top_layer_T < self.T_hp_sp_h):
+            # if self.top_layer_T < self.T_hp_sp_h:
+            #     self.hp_status = 'on'
+            # #
+            #
+            # if self.hp_status == 'on':
+            #     if self.bottom_layer_T < self.T_hp_sp_l:
+            #         self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_l - self.bottom_layer_T) / self.step_size * 100
+            #     else:
+            #         self.hp_demand = 0
+            #         self.hp_status = 'off'
+            # else:
+            #     self.hp_demand = 0
 
         elif self.operation_mode.lower() == 'cooling':
 

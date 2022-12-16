@@ -91,7 +91,7 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
     def step(self, time, inputs, max_advance):
 
         # print('hwt inputs: %s' % inputs)
-        print(f"Stepping HWT at {time}")
+        # print(f"Stepping HWT at {time}")
         if self.meta['type'] == 'event-based':
             if self.time != time:
                 self.first_iteration = True
