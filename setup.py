@@ -10,7 +10,7 @@ mosaik-api>=3.0
 mosaik-csv
 pytest
 tespy>=0.4.2
-tox    
+tox
 """
 
 # def requirements():
@@ -21,6 +21,8 @@ tox
 def requirements():
     buf = io.StringIO(reqs)
     _requirements = buf.readlines()
+    _requirements = [_.replace("\n", "") for _ in _requirements]
+    _requirements = [_ for _ in _requirements if _ != ""]
     return _requirements
 
 setup(
