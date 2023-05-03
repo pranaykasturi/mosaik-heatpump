@@ -1,9 +1,26 @@
 from setuptools import setup, find_packages
 import os
+import io
+
+# from requirements file
+reqs = """
+jsonpickle
+mosaik>=3.0.0
+mosaik-api>=3.0
+mosaik-csv
+pytest
+tespy>=0.4.2
+tox    
+"""
+
+# def requirements():
+#     with open('requirements.txt') as requirements_file:
+#         _requirements = requirements_file.readlines()
+#     return _requirements
 
 def requirements():
-    with open('requirements.txt') as requirements_file:
-        _requirements = requirements_file.readlines()
+    buf = io.StringIO(reqs)
+    _requirements = buf.readlines()
     return _requirements
 
 setup(
