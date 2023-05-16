@@ -531,10 +531,6 @@ class Connection(object):
     def __init__(self, params, layers):
         self.layers = layers  # reference to layers
         self.pos = params['pos']
-        if 'type' in params:
-            self.type = params['type']
-        if 'T_sp' in params:
-            self.T_sp = params['T_sp']
         self._F = 0  # flow [l/s]
         self._T = None  # °C
         self._T_buffer = []  # °C
@@ -551,19 +547,13 @@ class Connection(object):
                 if adapted_step_size_mode:
                     self._T_buffer.append(self.corresponding_layer.T)
             else:  # if self.F > 0:
-                if self.type != 'dhw_in':
-                    delta_T_min = float('Inf')  # smallest difference so far
-                    for idx, layer in enumerate(self.layers):
-                        delta_T = abs(self._T - layer.T)
-                        if delta_T < delta_T_min:
-                            delta_T_min = delta_T
-                            idx_min = idx
-                    self.corresponding_layer = self.layers[idx_min]
-                else:
-                    if self.layers[0].T < self.T_sp:
-                        self.corresponding_layer = self.layers[2]
-                    else:
-                        self.corresponding_layer = self.layers[0]
+                delta_T_min = float('Inf')  # smallest difference so far
+                for idx, layer in enumerate(self.layers):
+                    delta_T = abs(self._T - layer.T)
+                    if delta_T < delta_T_min:
+                        delta_T_min = delta_T
+                        idx_min = idx
+                self.corresponding_layer = self.layers[idx_min]
 
         except TypeError:
             self.corresponding_layer = self.corresponding_layer_pos
