@@ -351,7 +351,8 @@ def test_step_heating_rod(hwt_init_vals):
             'hr_1': {
                 'pos': 1800,
                 'T_max': 90,
-                'P_th_stages': [0, 500, 1000, 2000, 3000]
+                'P_th_stages': [0, 500, 1000, 2000, 3000],
+                'eta': 1
                 }
             }
         }
@@ -390,7 +391,8 @@ def test_max_temp_heating_rod(hwt_init_vals):
             'hr_1': {
                 'pos': 1800,
                 'T_max': 90,
-                'P_th_stages': [0, 500, 1000, 2000, 3000]
+                'P_th_stages': [0, 500, 1000, 2000, 3000],
+                'eta': 1
             }
         }
     }
