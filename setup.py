@@ -1,5 +1,29 @@
 from setuptools import setup, find_packages
 import os
+import io
+
+# from requirements file
+reqs = """
+jsonpickle
+mosaik>=3.0.0
+mosaik-api>=3.0
+mosaik-csv
+pytest
+tespy>=0.4.2
+tox
+"""
+
+# def requirements():
+#     with open('requirements.txt') as requirements_file:
+#         _requirements = requirements_file.readlines()
+#     return _requirements
+
+def requirements():
+    buf = io.StringIO(reqs)
+    _requirements = buf.readlines()
+    _requirements = [_.replace("\n", "") for _ in _requirements]
+    _requirements = [_ for _ in _requirements if _ != ""]
+    return _requirements
 
 setup(
     name='mosaik-heatpump',
@@ -12,11 +36,7 @@ setup(
                       open('AUTHORS.txt', encoding='utf-8').read()),
     long_description_content_type='text/x-rst',
     url='https://gitlab.com/mosaik/components/energy/mosaik-heatpump',
-    install_requires=[
-        'mosaik-api>=3.0',
-        'tespy>=0.4.2',
-        'jsonpickle'
-    ],
+    install_requires=requirements(),
     packages=find_packages(exclude=['tests*']),
     package_data={
         "": ["*.json"]

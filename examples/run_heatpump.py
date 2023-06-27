@@ -19,7 +19,7 @@ SIM_CONFIG = {
 
 START = '01.01.2016 00:00'
 END = 10 * 15 * 60  # 2.5 Hours or 150 mins
-HEAT_LOAD_DATA = 'data/Heatload_R1.csv'
+HEAT_LOAD_DATA = 'data/HeatLoad_R1.csv'
 date_format = 'DD.MM.YYYY HH:mm'
 
 # Create World

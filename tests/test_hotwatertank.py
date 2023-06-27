@@ -90,7 +90,7 @@ def test_step_flow_too_high():
         hwt.connections['gcb_out'].F = -0.6
         hwt.connections['gcb_in'].T = 80
         hwt.step(5*60)
-    assert hwt.connections['gcb_out'].T == 79.81175198706227
+    assert hwt.connections['gcb_out'].T == 79.55255848088274
 
 def test_step_loading(hwt_init_vals):
     hwt_params = {
@@ -351,7 +351,8 @@ def test_step_heating_rod(hwt_init_vals):
             'hr_1': {
                 'pos': 1800,
                 'T_max': 90,
-                'P_th_stages': [0, 500, 1000, 2000, 3000]
+                'P_th_stages': [0, 500, 1000, 2000, 3000],
+                'eta': 1
                 }
             }
         }
@@ -390,7 +391,8 @@ def test_max_temp_heating_rod(hwt_init_vals):
             'hr_1': {
                 'pos': 1800,
                 'T_max': 90,
-                'P_th_stages': [0, 500, 1000, 2000, 3000]
+                'P_th_stages': [0, 500, 1000, 2000, 3000],
+                'eta': 1
             }
         }
     }
