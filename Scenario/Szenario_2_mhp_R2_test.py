@@ -84,11 +84,10 @@ params_ctrl = {
     # 'T_hr_sp': 30,
     'T_hr_sp_dhw': 40,
     'T_hr_sp_sh': 35,
-    'T_max': 60,
-    'T_min': 30,
     'dhw_in_T': 10,
     'sh_dT': 7,
     'operation_mode': 'heating',
+    'control_strategy': '1',
 }
 
 sf = 1 # scaling factor for results
@@ -132,7 +131,7 @@ for i in range(len(model_list)):
 
     hwt_volume = 4000
 
-    hwt_height = ((hwt_volume * 1e6) * (6**3) / np.pi) ** (1/3)  # H:D ratio of 3:1 was used to calculate height from volume
+    hwt_height = ((hwt_volume * 1e6) * (6**2) / np.pi) ** (1/3)  # H:D ratio of 3:1 was used to calculate height from volume
 
     params_hp['calc_mode'] = calc_mode_list[i]
     params_hp['hp_model'] = model_list[i]

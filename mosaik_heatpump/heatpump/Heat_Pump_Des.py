@@ -599,12 +599,13 @@ if __name__ == '__main__':
 
     params_air = {
         # 'hp_model': 'Air_30kW_fixed_evap_m', #_1stage
-        'hp_model': 'Air_30kW_fixed_evap_m', #_1stage
+        'hp_model': 'LW 300(L)', #_1stage
         'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
         'Q_Demand': 32500,
-        'calc_mode': 'detailed',
+        'calc_mode': 'hplib',
+        'equivalent hp model':'Air_30kW_1stage_fixed_evap_m'
     }
 
     # with open(COP_M_DATA_FILE, "r") as read_file_1:
@@ -614,7 +615,7 @@ if __name__ == '__main__':
     heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
 
-    inputs_air_1 = {'heat_source_T': 23, 'Q_Demand': 15800, 'cond_in_T': 25, 'T_amb': 23}
+    inputs_air_1 = {'heat_source_T': 15.66, 'Q_Demand': 158000, 'cond_in_T': 39.66, 'T_amb': 15.66}
 
     heat_pump_1.step(inputs_air_1)
 
