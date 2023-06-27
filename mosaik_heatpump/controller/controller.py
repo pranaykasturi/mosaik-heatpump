@@ -51,122 +51,68 @@ class Controller():
 
         self.T_hp_sp_h = params.get('T_hp_sp_h')
         self.T_hp_sp_l = params.get('T_hp_sp_l')
-
-        # self.T_hp_sp_h = None
-        # self.T_hp_sp_l = None
-        # self.T_hp_sp_h_1 = params.get('T_hp_sp_h_1')
-        # self.T_hp_sp_h_2 = params.get('T_hp_sp_h_2')
-        # self.T_hp_sp_l_1 = params.get('T_hp_sp_l_1')
-        # self.T_hp_sp_l_2 = params.get('T_hp_sp_l_2')
-
         self.T_hr_sp = params.get('T_hr_sp')
         self.T_hr_sp_dhw = params.get('T_hr_sp_dhw')
         self.T_hr_sp_sh = params.get('T_hr_sp_sh')
-        self.T_max = params.get('T_max')
-        self.T_min = params.get('T_min')
         self.dhw_in_T = params.get('dhw_in_T')
         self.sh_dT = params.get('sh_dT')
         self.operation_mode = params.get('operation_mode')
-
-        self.new_hp_sp = False
+        self.control_strategy = params.get('control_strategy')
 
     def step(self):
 
-        if self.heat_demand is None or self.heat_demand < 0:
-            self.heat_demand = 0
         if self.sh_demand is None or self.sh_demand < 0:
             self.sh_demand = 0
         else:
             self.sh_demand *= 1000
-        if self.dhw_demand is None or self.dhw_demand < 0:
-            self.dhw_demand = 0
-        # if self.dhw_out_T is None:
-        #     self.dhw_out_T = 0
-        # if self.sh_out_T is None:
-        #     self.sh_out_T = 0
-        # if self.hp_cond_m is None:
-        #     self.hp_cond_m = 0
-        # if self.hp_on_fraction is None:
-        #     self.hp_on_fraction = 0
-        # if self.hp_out_T is None:
-        #     self.hp_out_T = 0
 
-        # if self.hwt_connections is not None:
-        #     hwt_connections = jsonpickle.decode((self.hwt_connections))
-
-        # self.calc_dhw_supply(hwt_connections)
-        self.calc_dhw_supply()
-
-        if self.dhw_out_T < self.T_hr_sp_dhw:
-            self.P_hr_dhw = self.dhw_in_F * 4184 * (self.T_hr_sp_dhw - self.dhw_out_T)
-        else:
-            self.P_hr_dhw = 0
-
-        # self.calc_sh_supply(hwt_connections)
         self.calc_sh_supply()
 
-        if self.sh_out_T < self.T_hr_sp_sh:
-            self.P_hr_sh = self.sh_in_F * 4184 * (self.T_hr_sp_sh - self.sh_out_T)
-            self.sh_in_T = self.T_hr_sp_sh - self.sh_dT
-        else:
-            self.P_hr_sh = 0
+        if self.dhw_demand is None or self.dhw_demand < 0:
+            self.dhw_demand = 0
 
-        if self.sh_supply is None:
-            self.sh_supply = 0
-        if self.dhw_supply is None:
-            self.dhw_supply = 0
+        self.calc_dhw_supply()
 
         self.heat_supply = self.sh_supply + self.dhw_supply
 
-        # self.get_hp_out_T(hwt_connections)
+        self.heat_demand = self.sh_demand + self.dhw_demand
 
         if self.operation_mode.lower() == 'heating':
 
-            # if self.T_amb > 15:
-            #     if self.hp_in_T < 35:
-            #     if not self.new_hp_sp:
-            #         self.T_hp_sp_l += 5
-            #         self.T_hp_sp_h += 5
-            #         self.new_hp_sp = True
-            # else:
-            #     if self.new_hp_sp:
-            #         self.T_hp_sp_l -= 5
-            #         self.T_hp_sp_h -= 5
-            #         self.new_hp_sp = False
-
-            # if self.hp_out_T < self.T_hp_sp_l:
-            #     self.hp_status = 'on'
-            # #
-            #
-            # if self.hp_status == 'on':
-            #     if self.hp_out_T < self.T_hp_sp_h:
-            #         self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_h - self.hp_out_T) / self.step_size
-            #     else:
-            #         self.hp_demand = 0
-            #         self.hp_status = 'off'
-            # else:
-            #     self.hp_demand = 0
-            #
-            # if self.heat_source_T > (self.T_amb + 2):
-            #     self.T_hp_sp_h = self.T_hp_sp_h_2
-            #     self.T_hp_sp_l = self.T_hp_sp_l_2
-            # else:
-            #     self.T_hp_sp_h = self.T_hp_sp_h_1
-            #     self.T_hp_sp_l = self.T_hp_sp_l_1
-
-            # if self.top_layer_T is not None and (self.top_layer_T < self.T_hp_sp_h):
-            if self.top_layer_T < self.T_hp_sp_h:
-                self.hp_status = 'on'
-            #
-
-            if self.hp_status == 'on':
+            if self.control_strategy == '1':
+                # Control strategy 1 - start
                 if self.bottom_layer_T < self.T_hp_sp_l:
-                    self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_l - self.bottom_layer_T) / self.step_size * 100
+                    self.hp_status = 'on'
+
+                if self.hp_status == 'on':
+                    if self.bottom_layer_T < self.T_hp_sp_h:
+                        self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_l - self.bottom_layer_T) / self.step_size
+                    else:
+                        self.hp_demand = 0
+                        self.hp_status = 'off'
                 else:
                     self.hp_demand = 0
-                    self.hp_status = 'off'
-            else:
-                self.hp_demand = 0
+                # Control strategy 1 - end
+
+            elif self.control_strategy == '2':
+                # Control strategy 2 - start
+                if self.top_layer_T < self.T_hp_sp_h:
+                    self.hp_status = 'on'
+                #
+                if self.hp_status == 'off':
+                    if self.bottom_layer_T < self.T_hp_sp_l:
+                        self.hp_status = 'on'
+
+                if self.hp_status == 'on':
+                    if self.bottom_layer_T < self.T_hp_sp_l:
+                        self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_l - self.bottom_layer_T) / self.step_size
+                    else:
+                        self.hp_demand = 0
+                        self.hp_status = 'off'
+                else:
+                    self.hp_demand = 0
+                # Control strategy 2 - end
+
 
         elif self.operation_mode.lower() == 'cooling':
 
@@ -189,73 +135,37 @@ class Controller():
             self.hp_in_T = self.hp_out_T
         
         if self.hp_supply is None:
-            #print('hp_supply is None')
             self.hp_supply = 0
-
 
         if self.hp_on_fraction is not None and self.hp_cond_m is not None:
             self.hp_in_F = self.hp_on_fraction * self.hp_cond_m
             self.hp_out_F = -self.hp_on_fraction * self.hp_cond_m
 
-            
         if self.T_hr_sp is not None:
             if self.T_mean < self.T_hr_sp:
                 self.hwt_hr_P_th_set = (self.hwt_mass * 4184 * (self.T_hr_sp - self.T_mean)) / self.step_size
             else:
                 self.hwt_hr_P_th_set = 0
 
-    # def calc_dhw_supply(self, hwt_connections):
     def calc_dhw_supply(self):
-
-        # sh_fraction = 1 # remove later/
-
-        # for key, connection in hwt_connections.items():
-        #
-        #     if connection.type == 'dhw_out':
-        dhw_m_flow = self.dhw_demand / self.step_size
-
-            # if connection.T > self.T_hr_sp_dhw:
-            #     dhw_m_flow *= (self.T_hr_sp_dhw - self.dhw_in_T) / (connection.T - self.dhw_in_T)
-            #     self.dhw_supply = dhw_m_flow * 4184 * (connection.T - self.dhw_in_T)
-        if self.dhw_out_T > self.T_hr_sp_dhw:
-            dhw_m_flow *= (self.T_hr_sp_dhw - self.dhw_in_T) / (self.dhw_out_T - self.dhw_in_T)
-            self.dhw_supply = dhw_m_flow * 4184 * (self.dhw_out_T - self.dhw_in_T)
+        self.dhw_in_F = self.dhw_demand / self.step_size
+        if self.dhw_out_T >= self.T_hr_sp_dhw:
+            self.dhw_in_F *= (self.T_hr_sp_dhw - self.dhw_in_T) / (self.dhw_out_T - self.dhw_in_T)
+            self.dhw_supply = self.dhw_in_F * 4184 * (self.dhw_out_T - self.dhw_in_T)
+            self.P_hr_dhw = 0
         else:
-            self.dhw_supply = dhw_m_flow * 4184 * (self.T_hr_sp_dhw - self.dhw_in_T)
+            self.dhw_supply = self.dhw_in_F * 4184 * (self.T_hr_sp_dhw - self.dhw_in_T)
+            self.P_hr_dhw = self.dhw_in_F * 4184 * (self.T_hr_sp_dhw - self.dhw_out_T)
+        self.dhw_out_F = - self.dhw_in_F
 
-        self.dhw_out_F = - dhw_m_flow
-        self.dhw_in_F = dhw_m_flow
-            # self.dhw_out_T = connection.T
 
-                # break
-
-    # def calc_sh_supply(self, hwt_connections):
     def calc_sh_supply(self):
-
-        # for key, connection in hwt_connections.items():
-        #
-        #     if connection.type == 'sh_out':
-        sh_m_flow = self.sh_demand / (4184 * self.sh_dT)
-
-        self.sh_supply = sh_m_flow * 4184 * self.sh_dT
-
-            # if connection.T >= self.T_hr_sp_sh:
-            #     sh_in_T = connection.T - self.sh_dT
+        self.sh_in_F = self.sh_demand / (4184 * self.sh_dT)
+        self.sh_supply = self.sh_in_F * 4184 * self.sh_dT
         if self.sh_out_T >= self.T_hr_sp_sh:
             self.sh_in_T = self.sh_out_T - self.sh_dT
+            self.P_hr_sh = 0
         else:
+            self.P_hr_sh = self.sh_in_F * 4184 * (self.T_hr_sp_sh - self.sh_out_T)
             self.sh_in_T = self.T_hr_sp_sh - self.sh_dT
-
-        self.sh_in_F = sh_m_flow
-        # self.sh_in_T = sh_in_T
-        self.sh_out_F = - sh_m_flow
-            # self.sh_out_T = connection.T
-
-                # break
-
-    # def get_hp_out_T (self, hwt_connections):
-    #
-    #     for key, connection in hwt_connections.items():
-    #
-    #         if connection.type == 'hp_out':
-    #             self.hp_out_T = connection.T
+        self.sh_out_F = - self.sh_in_F

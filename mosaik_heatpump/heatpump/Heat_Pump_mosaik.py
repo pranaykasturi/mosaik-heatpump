@@ -68,7 +68,7 @@ class HeatPumpSimulator(mosaik_api.Simulator):
 
     def step(self, time, inputs, max_advance):
         # print('heatpump inputs: %s' % inputs)
-        print(f"Stepping HP at {time}")
+        # print(f"Stepping HP at {time}")
         for eid, attrs in inputs.items():
             if self.meta['type'] == 'event-based':
                 if time != self.time:
