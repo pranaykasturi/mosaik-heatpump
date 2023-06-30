@@ -11,6 +11,7 @@ mosaik-csv
 pytest
 tespy>=0.4.2
 tox
+hplib
 """
 
 # def requirements():
