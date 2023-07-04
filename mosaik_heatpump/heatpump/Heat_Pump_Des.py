@@ -1,7 +1,5 @@
 import os
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from hplib.src import hplib as hpl
+from hplib import hplib as hpl
 from tespy.networks import Network
 from tespy.components import (
     Sink, Source, Compressor, Condenser, Pump, HeatExchangerSimple,
