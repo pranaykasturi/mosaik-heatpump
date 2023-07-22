@@ -65,6 +65,11 @@ class Heat_Pump_Des():
 
             self.hp = hpl.HeatPump(parameters)
 
+        if 'detailed' in self.calc_mode.lower():
+            self.cond_in_T = self.cons_T - 5
+            self._etas_heatload_id()
+            self._design_hp()
+
 
 
     def _take_closest(self, myList, myNumber):
