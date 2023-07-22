@@ -58,9 +58,6 @@ class Heat_Pump_Inputs():
         self.T_amb = params.get('T_amb')
         """The ambient temperature (in °C)"""
 
-        # self.cons_T = params.get('cons_T')
-        # """The temperature at which heat is supplied to the consumer (in °C)"""
-
         self.cond_in_T = params.get('cond_in_T')
         """The temperature at which the water reenters the condenser (in °C)"""
 
@@ -119,7 +116,6 @@ class Heat_Pump():
 
         step_inputs = {'heat_source_T': self.inputs.heat_source_T,
                        'Q_Demand': self.inputs.Q_Demand,
-                       # 'cons_T': self.inputs.cons_T,
                        'cond_in_T': self.inputs.cond_in_T,
                        'T_amb': self.inputs.T_amb
                        }

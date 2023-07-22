@@ -8,15 +8,9 @@ from tespy.components import (
 from tespy.connections import Connection, Ref
 from tespy.tools.characteristics import CharLine
 from tespy.tools.characteristics import load_default_char as ldc
-from tespy.tools import logger
 from bisect import bisect_left
-import json
 
-import logging
-# logging.basicConfig(level=logging.ERROR)
-# logger.define_logging(log_path=True, log_version=True,
-#                       screen_level=logging.ERROR,
-#                       file_level=logging.DEBUG)
+import json
 JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'eta_s_data.json'))
 COP_M_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'cop_m_data.json'))
 
@@ -25,52 +19,37 @@ class Heat_Pump_Des():
 
     def __init__(self, params, COP_m_data=None):
 
-        self.Q_Demand = params.get('Q_Demand')
-
-        self.cons_T = params.get('cons_T', None)
-
-        self.cond_in_T = params.get('cond_in_T')
-        # self.cond_in_T = self.cons_T - 5
-
+        # Parameters required for all models
         self.hp_model = params.get('hp_model')
         self.heat_source = params.get('heat_source')
-
-        self.heat_source_T = params.get('heat_source_T', None)
-        self.T_amb = params.get('T_amb')
-
-
-        self.LWE = None
-        self.LWC = None
-
-        self.LWC_des = None
-        self.LWE_des = None
-        self.heat_source_T_des = None
-
-        self.etas_des = None
-        self.heatload_des = None
-
-        self.cmp_stages = 1
-
-        self.ic = False
-        self.sh = False
-
-        self.idx = None
-        self.nw = None
-
-        self.skip_step = False
-
-        self.Q_Supplied = None
-
-        self.on_fraction = None
-
-        self.cond_m = None
-
-        self.Q_evap = None
-
         self.calc_mode = params.get('calc_mode')
 
-        self.COP_m_data = COP_m_data
+        # Parameters required if 'Generic' heat pump is chosen in the 'hplib' calculation mode
+        self.Q_Demand = params.get('Q_Demand', None)
+        self.cons_T = params.get('cons_T', None)
+        self.heat_source_T = params.get('heat_source_T', None)
 
+        # Attributes of the heat pump
+        self.LFE = None  # The temperature of the fluid leaving the evaporator
+        self.LFE_des = None  # The temperature of the water leaving the condenser in design case
+        self.LWC = None  # The temperature of the water leaving the condenser
+        self.LWC_des = None  # The temperature of the fluid leaving the evaporator in design case
+        self.heat_source_T_des = None  # The heat source temperature in design case
+        self.etas_des = None  # The compressor efficiency in design case
+        self.heatload_des = None  # The heating capacity in design case
+        self.cmp_stages = 1  # The number of stages of compression
+        self.ic = False  # Intercooler between the compressors, if more than one stage of compression
+        self.sh = False  # Super heater for the fluid entering the evaporator
+        self.idx = None  # Index to keep track of the current design point
+        self.nw = None  # The network with all the components
+        self.Q_Supplied = None  # Heat supplied by the heat pump
+        self.on_fraction = None  # The fraction of timestep for which the heat pump operates
+        self.cond_m = None  # The mass flow of water in condenser
+        self.Q_evap = None  # The heat extracted from source in the evaporator
+        self.COP_m_data = COP_m_data  # The saved data for fast calculation mode
+        self.skip_step = False  # Used to skip a step in case of an error
+
+        # Initiating the heat pump for the hplib mode
         if 'hplib' in self.calc_mode.lower():
             if self.hp_model == 'Generic':
                 if 'air' in self.heat_source.lower():
@@ -128,14 +107,14 @@ class Heat_Pump_Des():
                 if heat_source_T_min <= self.heat_source_T <= heat_source_T_max:
                     idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T))
                     self.heat_source_T_des = idx_T
-                    self.LWE_des = self.heat_source_T_des - 5
+                    self.LFE_des = self.heat_source_T_des - 5
                 else:
                     self.skip_step = True
             else:
                 if heat_source_T_min <= (self.heat_source_T-5) <= heat_source_T_max:
                     idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T - 5))
-                    self.LWE_des = idx_T
-                    self.heat_source_T_des = self.LWE_des + 5
+                    self.LFE_des = idx_T
+                    self.heat_source_T_des = self.LFE_des + 5
                 else:
                     self.skip_step = True
 
@@ -207,9 +186,6 @@ class Heat_Pump_Des():
                 params_des['cd_p0'] = 25
             else:
                 params_des['pr'] = 1.35
-        #     self.cmp_stages = 2
-        # elif 'air_30kw_1stage' in self.hp_model.lower():
-        #     params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0, 'ttd_u': 5, 'pr': 1.35}
         elif 'water' in self.hp_model.lower():
             params_des = {'ref': 'R407c', 'm_air': 0, 'm_water': 1, 'ttd_u': 23}
 
@@ -371,14 +347,7 @@ class Heat_Pump_Des():
 
         # evaporator system cold side
 
-        # erp_ev.set_attr(m=Ref(va_dr, 1.15, 0), p0=6.5)
         erp_ev.set_attr(m=Ref(va_dr, 1.15, 0))
-
-        # if self.sh is False:
-        #     dr_cp1.set_attr(state='g')
-        # else:
-        #     dr_su.set_attr(state='g')
-
 
         # evaporator system hot side
 
@@ -389,7 +358,6 @@ class Heat_Pump_Des():
                                    }
                             )
         if self.sh is True:
-            # su_cp1.set_attr(state='g')
             apu_su.set_attr(p=1.0001)
         else:
             apu_ev.set_attr(p=1.0001)  # check this
@@ -399,28 +367,21 @@ class Heat_Pump_Des():
                                                  'air': params_des['m_air']})
             he_ic_out.set_attr(T=(self.LWC_des-10), design=['T'])
         else:
-            # dr_cp1.set_attr(p0=6.5, h0=400)
             dr_cp1.set_attr(h0=400)
-        # ev_amb_out.set_attr(T=self.LWE_des, design=['T'])
 
         if 'fixed_evap_m' in self.hp_model.lower():
             amb_in_apu.set_attr(m=params_des['evap_m'])
             dr_erp.set_attr(p0=params_des['ev_p0'])
             c_in_cd.set_attr(p0=params_des['cd_p0'])
-            # c_in_cd.set_attr(p0=params_des['cd_h0'])
             if not self.sh:
                 dr_cp1.set_attr(h0=params_des['dr_h0'])
         else:
-            ev_amb_out.set_attr(T=self.LWE_des)
-
+            ev_amb_out.set_attr(T=self.LFE_des)
 
         # %% key paramter
-
         cons.set_attr(Q=-self.heatload_des)
 
         # %% Calculation of the design condition
-
-
         self.nw.solve('design')
         # self.nw.print_results()
         self.nw.save('heat_pump')
@@ -469,9 +430,6 @@ class Heat_Pump_Des():
         if self.calc_mode == 'fixed':
             self.heatload_min = 5000
             self.heatload_max = 11040
-        elif self.calc_mode == 'hplib_test':
-            self.heatload_min = 0
-            self.cons_T_max = 65
         else:
             self._etas_heatload_id()
 
@@ -501,12 +459,6 @@ class Heat_Pump_Des():
                     self.step_error()
 
             else:
-
-                # if self.calc_mode == 'fixed':
-                #     self.heatload_min = 5000
-                #     self.heatload_max = 11040
-                # else:
-                #     self._etas_heatload_id()
 
                 if self.Q_Demand < self.heatload_min:
                     self.skip_step = True
@@ -552,21 +504,17 @@ class Heat_Pump_Des():
 
                         if id_old != self.idx:
                             try:
-                                # print('designing hp')
                                 self._design_hp()
                             except:
                                 self.step_error()
                             self.p_cop_calc()
-                            # print('P : ', self.P_cons)
-                            # print('COP : ', self.COP)
-                            # print('cond_m :', self.cond_m)
 
                         if not self.skip_step:
                             self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
                             self.nw.get_conn('consumer cycle closer:out1_condenser recirculation pump:in1').set_attr(T=self.cond_in_T)
                             if 'fixed_evap_m' not in self.hp_model.lower():
-                                self.LWE = self.heat_source_T - 5
-                                self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LWE)
+                                self.LFE = self.heat_source_T - 5
+                                self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LFE)
                             self.nw.get_comp('consumer').set_attr(Q=-self.Q_Supplied)
                             try:
                                 self.nw.solve('offdesign', design_path='heat_pump')
@@ -596,21 +544,23 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        # 'hp_model': 'Air_30kW_fixed_evap_m', #_1stage
-        'hp_model': 'LW 300(L)', #_1stage
+        'hp_model': 'Air_30kW_1stage_fixed_evap_m', #_1stage
+        # 'hp_model': 'LW 300(L)', #_1stage
         'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
         'Q_Demand': 32500,
-        'calc_mode': 'hplib',
+        # 'calc_mode': 'hplib',
+        # 'calc_mode': 'detailed',
+        'calc_mode': 'fast',
         'equivalent hp model':'Air_30kW_1stage_fixed_evap_m'
     }
 
-    # with open(COP_M_DATA_FILE, "r") as read_file_1:
-    #     COP_m_data_all = json.load(read_file_1)
-    #     COP_m_data = COP_m_data_all[params_air['hp_model']]
-    # heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=COP_m_data)
-    heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
+    with open(COP_M_DATA_FILE, "r") as read_file_1:
+        COP_m_data_all = json.load(read_file_1)
+        COP_m_data = COP_m_data_all[params_air['hp_model']]
+    heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=COP_m_data)
+    # heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
 
     inputs_air_1 = {'heat_source_T': 15.66, 'Q_Demand': 158000, 'cond_in_T': 39.66, 'T_amb': 15.66}
@@ -622,30 +572,4 @@ if __name__ == '__main__':
     print('cond_m :',  heat_pump_1.cond_m)
     print('eta_s : ', heat_pump_1.etas_des)
     print('cmp_stages : ', heat_pump_1.cmp_stages)
-    # print('cond_m : ', heat_pump_1.nw.get_conn('condenser:out2_consumer:in1').m.val)
 
-    # inputs_air_2 = {'heat_source_T': 7, 'Q_Demand': 15220, 'cons_T': 45}
-    #
-    # heat_pump_1.step(inputs_air_2)
-    # print('P : ', heat_pump_1.P_cons)
-    # print('COP : ', heat_pump_1.COP)
-    # # print('cond_m : ', heat_pump_1.nw.get_conn('condenser:out2_consumer:in1').m.val)
-    #
-    # params_water = {
-    #     'heat_source': 'water',
-    #     'heat_source_T': 12,
-    #     'cons_T': 35,
-    # }
-    #
-    # heat_pump_2 = Heat_Pump_Des(params_water)
-    # inputs_water_1 = {'heat_source_T': 12, 'Q_Demand': 16700, 'cons_T': 35}
-    #
-    # heat_pump_2.step(inputs_water_1)
-    # print('P : ', heat_pump_2.P_cons)
-    # print('COP : ', heat_pump_2.COP)
-    #
-    # inputs_water_2 = {'heat_source_T': 9, 'Q_Demand': 15900, 'cons_T': 30}
-    #
-    # heat_pump_2.step(inputs_water_2)
-    # print('P : ', heat_pump_2.P_cons)
-    # print('COP : ', heat_pump_2.COP)
