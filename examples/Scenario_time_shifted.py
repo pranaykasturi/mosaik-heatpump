@@ -70,9 +70,9 @@ params_ctrl = {
     'control_strategy': '1'
 }
 
-model_list = ['Air_30kW_1stage', 'Air_30kW_1stage', 'LW 300(L)']
-calc_mode_list = ['detailed', 'fast', 'hplib']
-filename_list = ['detailed', 'fast', 'hplib']
+model_list = ['Air_30kW_1stage', 'Air_30kW_1stage', 'LW 300(L)', None]
+calc_mode_list = ['detailed', 'fast', 'hplib', 'fixed']
+filename_list = ['detailed', 'fast', 'hplib', 'fixed']
 
 for i in range(len(model_list)):
 
@@ -105,6 +105,10 @@ for i in range(len(model_list)):
 
     if 'hplib' in params_hp['calc_mode']:
         params_hp['equivalent hp model'] = 'Air_30kW_1stage'
+    elif 'fixed' in params_hp['calc_mode']:
+        params_hp['COP'] = 3.5
+        params_hp['heating capacity'] = 15000
+        params_hp['cond_m'] = 0.5
 
     heatpumps = heatpumpsim.HeatPump.create(1, params=params_hp)
 
