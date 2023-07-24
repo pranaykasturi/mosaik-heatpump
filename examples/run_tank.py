@@ -1,10 +1,8 @@
 import mosaik
-import inspect
-
-
 import sys
 import os
-
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 SIM_CONFIG = {
     'HotWaterTankSim': {
@@ -14,14 +12,13 @@ SIM_CONFIG = {
         'python': 'mosaik_csv:CSV',
     },
     'DB': {
-        'cmd': 'mosaik-hdf5 %(addr)s'
+        'python': 'mosaik_hdf5:MosaikHdf5'
     },
 }
 
 START = '01.01.2016 00:00'
-# END =  24 * 3600  # 1 day
 END = 7 * 15 * 60
-HEAT_LOAD_DATA = 'data.csv'
+HWT_FLOW_DATA = './data/tank_data.csv'
 date_format = 'DD.MM.YYYY HH:mm'
 
 params = {
@@ -43,10 +40,7 @@ world = mosaik.World(SIM_CONFIG)
 # configure the simulators
 hwtsim = world.start('HotWaterTankSim', step_size=15*60, config=params)
 
-# heatpumpsim = world.start('HeatPumpSim', step_size=15*60)
-
-csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA, date_format=date_format)
-
+csv = world.start('CSV', sim_start=START, datafile=HWT_FLOW_DATA, date_format=date_format, delimiter=',')
 
 init_vals = {
             'layers': {'T': [30, 50, 70]}
@@ -57,13 +51,11 @@ hwt = hwtsim.HotWaterTank(params=params, init_vals=init_vals)
 csv_data = csv.HWT()
 
 # Connect entities
-# world.connect(csv_data, hwt, ('T_in', 'cc_in.T'), ('F_in', 'cc_in.F'), ('T_out',  'cc_out.T'), ('F_out', 'cc_out.F'))
-world.connect(csv_data, hwt, ('T_in', 'cc_in.T'), ('F_in', 'cc_in.F'), ('F_out', 'cc_out.F'))
-
+world.connect(csv_data, hwt, ('T_in', 'cc_in.T'), ('F_in', 'cc_in.F'), ('T_out',  'cc_out.T'), ('F_out', 'cc_out.F'))
 
 # storage
 db = world.start('DB', step_size=15*60, duration=END)
-hdf5 = db.Database(filename='hwt_trial_4.hdf5')
+hdf5 = db.Database(filename='hwt_trial_1.hdf5')
 world.connect(hwt, hdf5, 'cc_in.T', 'cc_in.F', 'cc_out.T', 'cc_out.F', 'sensor_00.T', 'sensor_01.T', 'sensor_02.T')
 
 world.run(until=END)  # As fast as possilbe

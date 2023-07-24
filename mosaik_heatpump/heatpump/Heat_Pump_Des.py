@@ -1,7 +1,5 @@
 import os
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from hplib.src import hplib as hpl
+from hplib import hplib as hpl
 from tespy.networks import Network
 from tespy.components import (
     Sink, Source, Compressor, Condenser, Pump, HeatExchangerSimple,
@@ -10,64 +8,54 @@ from tespy.components import (
 from tespy.connections import Connection, Ref
 from tespy.tools.characteristics import CharLine
 from tespy.tools.characteristics import load_default_char as ldc
-from tespy.tools import logger
 from bisect import bisect_left
-import json
 
-import logging
-# logging.basicConfig(level=logging.ERROR)
-# logger.define_logging(log_path=True, log_version=True,
-#                       screen_level=logging.ERROR,
-#                       file_level=logging.DEBUG)
+import json
 JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'eta_s_data.json'))
+COP_M_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'cop_m_data.json'))
 
 
 class Heat_Pump_Des():
 
     def __init__(self, params, COP_m_data=None):
 
-        self.Q_Demand = params.get('Q_Demand')
-
-        self.cons_T = params.get('cons_T', None)
-
-        self.cond_in_T = params.get('cond_in_T')
-        # self.cond_in_T = self.cons_T - 5
-
+        # Parameters required for all models
         self.hp_model = params.get('hp_model')
         self.heat_source = params.get('heat_source')
-
-        self.heat_source_T = params.get('heat_source_T', None)
-        self.T_amb = params.get('T_amb')
-
-
-        self.LWE = None
-        self.LWC = None
-
-        self.LWC_des = None
-        self.LWE_des = None
-        self.heat_source_T_des = None
-
-        self.etas_des = None
-        self.heatload_des = None
-
-        self.cmp_stages = 1
-
-        self.idx = None
-        self.nw = None
-
-        self.skip_step = False
-
-        self.Q_Supplied = None
-
-        self.on_fraction = None
-
-        self.cond_m = None
-
         self.calc_mode = params.get('calc_mode')
 
-        self.COP_m_data = COP_m_data
+        # Parameters required if 'Generic' heat pump is chosen in the 'hplib' calculation mode
+        self.Q_Demand = params.get('Q_Demand', None)
+        self.cons_T = params.get('cons_T', None)
+        self.heat_source_T = params.get('heat_source_T', None)
 
-        if self.calc_mode.lower() == 'hplib':
+        # Parameters required for the 'fixed' calculation mode
+        self.COP_fixed = params.get('COP', None)
+        self.HC_fixed = params.get('heating capacity', None)
+        self.cond_m_fixed = params.get('cond_m', None)
+
+        # Attributes of the heat pump
+        self.LFE = None  # The temperature of the fluid leaving the evaporator
+        self.LFE_des = None  # The temperature of the water leaving the condenser in design case
+        self.LWC = None  # The temperature of the water leaving the condenser
+        self.LWC_des = None  # The temperature of the fluid leaving the evaporator in design case
+        self.heat_source_T_des = None  # The heat source temperature in design case
+        self.etas_des = None  # The compressor efficiency in design case
+        self.heatload_des = None  # The heating capacity in design case
+        self.cmp_stages = 1  # The number of stages of compression
+        self.ic = False  # Intercooler between the compressors, if more than one stage of compression
+        self.sh = False  # Super heater for the fluid entering the evaporator
+        self.idx = None  # Index to keep track of the current design point
+        self.nw = None  # The network with all the components
+        self.Q_Supplied = None  # Heat supplied by the heat pump
+        self.on_fraction = None  # The fraction of timestep for which the heat pump operates
+        self.cond_m = None  # The mass flow of water in condenser
+        self.Q_evap = None  # The heat extracted from source in the evaporator
+        self.COP_m_data = COP_m_data  # The saved data for fast calculation mode
+        self.skip_step = False  # Used to skip a step in case of an error
+
+        # Initiating the heat pump for the hplib mode
+        if 'hplib' in self.calc_mode.lower():
             if self.hp_model == 'Generic':
                 if 'air' in self.heat_source.lower():
                     parameters = hpl.get_parameters(model=self.hp_model, group_id=1, t_in=self.heat_source_T, t_out=self.cons_T,
@@ -77,8 +65,15 @@ class Heat_Pump_Des():
                                                     p_th=self.Q_Demand)
             else:
                 parameters = hpl.get_parameters(self.hp_model)
+                if self.hp_model == 'LW 300(L)':
+                    self.hp_model = params.get('equivalent hp model')
 
             self.hp = hpl.HeatPump(parameters)
+
+        if 'detailed' in self.calc_mode.lower():
+            self.cond_in_T = self.cons_T - 5
+            self._etas_heatload_id()
+            self._design_hp()
 
 
 
@@ -111,54 +106,65 @@ class Heat_Pump_Des():
         heat_source_T_min = min(list(map(int, etas_dict)))
         heat_source_T_max = max(list(map(int, etas_dict)))
 
-        if 'air' in self.hp_model.lower():
-            if heat_source_T_min <= self.heat_source_T <= heat_source_T_max:
-                idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T))
-                self.heat_source_T_des = idx_T
-                self.LWE_des = self.heat_source_T_des - 5
-            else:
-                self.skip_step = True
-        else:
-            if heat_source_T_min <= (self.heat_source_T-5) <= heat_source_T_max:
-                idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T - 5))
-                self.LWE_des = idx_T
-                self.heat_source_T_des = self.LWE_des + 5
-            else:
-                self.skip_step = True
+        self.skip_step = False
+
+        if self.heat_source_T > self.cond_in_T:
+            self.skip_step = True
 
         if not self.skip_step:
-            cons_T_min = min(list(map(int, etas_dict[str(idx_T)])))
-            self.cons_T_max = max(list(map(int, etas_dict[str(idx_T)])))
 
-            cons_T_des = self.cond_in_T + 5
-
-            if cons_T_des < cons_T_min:
-                self.skip_step = True
-            elif cons_T_des > self.cons_T_max:
-                if self.cond_in_T < self.cons_T_max:
-                    cons_T_des = self.cons_T_max
+            if 'air' in self.heat_source.lower():
+                if heat_source_T_min <= self.heat_source_T <= heat_source_T_max:
+                    idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T))
+                    self.heat_source_T_des = idx_T
+                    self.LFE_des = self.heat_source_T_des - 5
+                else:
+                    self.skip_step = True
+            else:
+                if heat_source_T_min <= (self.heat_source_T-5) <= heat_source_T_max:
+                    idx_T = self._take_closest(list(map(int, etas_dict)), (self.heat_source_T - 5))
+                    self.LFE_des = idx_T
+                    self.heat_source_T_des = self.LFE_des + 5
                 else:
                     self.skip_step = True
 
-            self.LWC_des = self._take_closest(list(map(int, etas_dict[str(idx_T)])), cons_T_des)
+            if not self.skip_step:
 
-            self.etas_des = etas_dict[str(idx_T)][str(self.LWC_des)]
+                clean_dict = {k: etas_dict[str(idx_T)][k] for k in etas_dict[str(idx_T)] if
+                              etas_dict[str(idx_T)][k] is not None}
 
-            heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)]
+                cons_T_min = min(list(map(int, clean_dict)))
+                self.cons_T_max = max(list(map(int, clean_dict)))
 
-            if heatload_des is None:
-                self.skip_step = True
-                self.heatload_des = 0
-                self.heatload_max = 0
-                self.heatload_min = 0
+                cons_T_des = self.cond_in_T + 5
 
-            else:
-                self.heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)] * 1000
-                self.heatload_max = self.heatload_des
-                self.heatload_min = data_1[self.hp_model]['min_heatload']
+                if cons_T_des < cons_T_min:
+                    self.skip_step = True
+                elif cons_T_des > self.cons_T_max:
+                    if self.cond_in_T < self.cons_T_max:
+                        cons_T_des = self.cons_T_max
+                    else:
+                        self.skip_step = True
+
+                self.LWC_des = self._take_closest(list(map(int, etas_dict[str(idx_T)])), cons_T_des)
+
+                self.etas_des = etas_dict[str(idx_T)][str(self.LWC_des)]
+
+                heatload_des = heatload_dict[str(idx_T)][str(self.LWC_des)]
+
+                if heatload_des is None:
+                    self.skip_step = True
+                    self.heatload_des = 0
+                    self.heatload_max = 0
+                    self.heatload_min = 0
+
+                else:
+                    self.heatload_des = heatload_des * 1000
+                    self.heatload_max = self.heatload_des
+                    self.heatload_min = data_1[self.hp_model]['min_heatload']
 
 
-            self.idx = id_dict[str(idx_T)][str(self.LWC_des)]
+                self.idx = id_dict[str(idx_T)][str(self.LWC_des)]
 
 
 
@@ -173,8 +179,23 @@ class Heat_Pump_Des():
         elif 'air_16kw' in self.hp_model.lower():
             params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 15}
         elif 'air_60kw' in self.hp_model.lower():
-            params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'ttd_u': 15}
+            params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'ttd_u': 15, 'pr': 2}
             self.cmp_stages = 2
+            self.ic = True
+            self.sh = True
+        elif 'air_30kw' in self.hp_model.lower():
+            params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0, 'ttd_u': 5}
+            if '1stage' not in self.hp_model.lower():
+                self.cmp_stages = 2
+
+            if 'fixed_evap_m' in self.hp_model.lower():
+                params_des['evap_m'] = 2.65
+                params_des['pr'] = 1.75
+                params_des['ev_p0'] = 2
+                params_des['dr_h0'] = 200
+                params_des['cd_p0'] = 25
+            else:
+                params_des['pr'] = 1.35
         elif 'water' in self.hp_model.lower():
             params_des = {'ref': 'R407c', 'm_air': 0, 'm_water': 1, 'ttd_u': 23}
 
@@ -186,14 +207,15 @@ class Heat_Pump_Des():
         # %% components
 
         # sources & sinks
-        cc = CycleCloser('coolant cycle closer')
+        cool_closer = CycleCloser('coolant cycle closer')
         cons_closer = CycleCloser('consumer cycle closer')
         amb_in = Source('source ambient')
         amb_out = Sink('sink ambient')
 
         if self.cmp_stages == 2:
-            ic_in = Source('source intercool')
-            ic_out = Sink('sink intercool')
+            if self.ic is True:
+                ic_in = Source('source intercool')
+                ic_out = Sink('sink intercool')
 
         # ambient air system
         apu = Pump('ambient pump')
@@ -211,22 +233,23 @@ class Heat_Pump_Des():
         ev = HeatExchanger('evaporator')
         erp = Pump('evaporator recirculation pump')
 
-        if self.cmp_stages == 2:
+        if self.sh is True:
             su = HeatExchanger('superheater')
 
         # compressor-system
 
-        cp1 = Compressor('compressor')
+        cp1 = Compressor('compressor 1')
 
         if self.cmp_stages == 2:
             cp2 = Compressor('compressor 2')
-            he = HeatExchanger('intercooler')
+            if self.ic is True:
+                he = HeatExchanger('intercooler')
 
         # %% connections
 
         # consumer system
 
-        c_in_cd = Connection(cc, 'out1', cd, 'in1')
+        c_in_cd = Connection(cool_closer, 'out1', cd, 'in1')
         close_crp = Connection(cons_closer, 'out1', crp, 'in1')
         crp_cd = Connection(crp, 'out1', cd, 'in2')
         cd_cons = Connection(cd, 'out2', cons, 'in1')
@@ -255,28 +278,36 @@ class Heat_Pump_Des():
 
         self.nw.add_conns(amb_in_apu, ev_amb_out)
 
-        if self.cmp_stages == 2:
+        if self.sh is True:
             dr_su = Connection(dr, 'out2', su, 'in2')
             apu_su = Connection(apu, 'out1', su, 'in1')
             su_ev = Connection(su, 'out1', ev, 'in1')
             su_cp1 = Connection(su, 'out2', cp1, 'in1')
             self.nw.add_conns(dr_su, apu_su, su_ev, su_cp1)
         else:
-            dr_cp = Connection(dr, 'out2', cp1, 'in1')
-            cp_cc = Connection(cp1, 'out1', cc, 'in1')
+            dr_cp1 = Connection(dr, 'out2', cp1, 'in1')
+
             apu_ev = Connection(apu, 'out1', ev, 'in1')
 
-            self.nw.add_conns(dr_cp, cp_cc, apu_ev)
+            self.nw.add_conns(dr_cp1, apu_ev)
 
-        if self.cmp_stages == 2:
+        if self.ic is True:
             cp1_he = Connection(cp1, 'out1', he, 'in1')
             he_cp2 = Connection(he, 'out1', cp2, 'in1')
-            cp2_cc = Connection(cp2, 'out1', cc, 'in1')
+            cp2_cc = Connection(cp2, 'out1', cool_closer, 'in1')
 
             ic_in_he = Connection(ic_in, 'out1', he, 'in2')
             he_ic_out = Connection(he, 'out2', ic_out, 'in1')
 
             self.nw.add_conns(cp1_he, he_cp2, ic_in_he, he_ic_out, cp2_cc)
+        else:
+            if self.cmp_stages == 2:
+                cp1_cp2 = Connection(cp1, 'out1', cp2, 'in1')
+                cp2_cc = Connection(cp2, 'out1', cool_closer, 'in1')
+                self.nw.add_conns(cp1_cp2, cp2_cc)
+            else:
+                cp1_cc = Connection(cp1, 'out1', cool_closer, 'in1')
+                self.nw.add_conns(cp1_cc)
 
         # %% component parametrization
 
@@ -293,13 +324,13 @@ class Heat_Pump_Des():
         kA_char1 = ldc('heat exchanger', 'kA_char1', 'DEFAULT', CharLine)
         kA_char2 = ldc('heat exchanger', 'kA_char2', 'EVAPORATING FLUID', CharLine)
 
-        ev.set_attr(pr1=0.99, pr2=0.99, ttd_l=2,
+        ev.set_attr(pr1=0.99, pr2=0.99, ttd_l=5,
                     kA_char1=kA_char1, kA_char2=kA_char2,
                     design=['pr1', 'ttd_l'], offdesign=['zeta1', 'kA_char'])
         erp.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
         apu.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
 
-        if self.cmp_stages == 2:
+        if self.sh is True:
             su.set_attr(pr1=0.99, pr2=0.99, ttd_u=2, design=['pr1', 'pr2', 'ttd_u'],
                         offdesign=['zeta1', 'zeta2', 'kA_char'])
         # compressor system
@@ -307,8 +338,9 @@ class Heat_Pump_Des():
         cp1.set_attr(eta_s=self.etas_des, design=['eta_s'], offdesign=['eta_s_char'])
 
         if self.cmp_stages == 2:
-            cp2.set_attr(eta_s=0.8, pr=2, design=['eta_s'], offdesign=['eta_s_char'])
+            cp2.set_attr(eta_s=self.etas_des, pr=params_des['pr'], design=['eta_s'], offdesign=['eta_s_char'])
 
+        if self.ic is True:
             he.set_attr(pr1=0.98, pr2=0.98, design=['pr1', 'pr2'],
                         offdesign=['zeta1', 'zeta2', 'kA_char'])
         # %% connection parametrization
@@ -325,7 +357,7 @@ class Heat_Pump_Des():
 
         # evaporator system cold side
 
-        erp_ev.set_attr(m=Ref(va_dr, 1.15, 0), p0=6.5)
+        erp_ev.set_attr(m=Ref(va_dr, 1.15, 0))
 
         # evaporator system hot side
 
@@ -335,34 +367,38 @@ class Heat_Pump_Des():
                                    'air': params_des['m_air']
                                    }
                             )
-        if self.cmp_stages == 2:
-            su_cp1.set_attr(state='g')
+        if self.sh is True:
             apu_su.set_attr(p=1.0001)
+        else:
+            apu_ev.set_attr(p=1.0001)  # check this
+        if self.ic is True:
             he_cp2.set_attr(T=(self.LWC_des-5), p0=10)
             ic_in_he.set_attr(p=1.5, T=7, fluid={'water': params_des['m_water'], params_des['ref']: 0,
                                                  'air': params_des['m_air']})
             he_ic_out.set_attr(T=(self.LWC_des-10), design=['T'])
         else:
-            apu_ev.set_attr(p=1.0001)  # check this
-            dr_cp.set_attr(p0=6.5, h0=400)
-        # ev_amb_out.set_attr(T=self.LWE_des, design=['T'])
-        ev_amb_out.set_attr(T=self.LWE_des)
+            dr_cp1.set_attr(h0=400)
 
+        if 'fixed_evap_m' in self.hp_model.lower():
+            amb_in_apu.set_attr(m=params_des['evap_m'])
+            dr_erp.set_attr(p0=params_des['ev_p0'])
+            c_in_cd.set_attr(p0=params_des['cd_p0'])
+            if not self.sh:
+                dr_cp1.set_attr(h0=params_des['dr_h0'])
+        else:
+            ev_amb_out.set_attr(T=self.LFE_des)
 
         # %% key paramter
-
         cons.set_attr(Q=-self.heatload_des)
 
         # %% Calculation of the design condition
-
-
         self.nw.solve('design')
         # self.nw.print_results()
         self.nw.save('heat_pump')
 
     def p_cop_calc(self):
 
-        self.P_cons = (self.nw.get_comp('compressor').P.val +
+        self.P_cons = (self.nw.get_comp('compressor 1').P.val +
                        self.nw.get_comp('evaporator recirculation pump').P.val +
                        self.nw.get_comp('condenser recirculation pump').P.val +
                        self.nw.get_comp('ambient pump').P.val
@@ -373,7 +409,9 @@ class Heat_Pump_Des():
 
         self.COP = -self.nw.get_comp('consumer').Q.val / self.P_cons
 
-        if self.COP < 1 or self.COP > 6:
+        self.Q_evap = self.nw.get_comp('evaporator').Q.val
+
+        if self.COP < 1 or self.COP > 20:
             self.step_error()
 
     def step(self, inputs):
@@ -399,90 +437,112 @@ class Heat_Pump_Des():
 
         id_old = self.idx
 
-        if self.calc_mode == 'hplib':
-            results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
-                                       t_amb=self.T_amb, mode=1)
-            self.cond_m = round(results['m_dot'], 2)
-            self.COP = round(results['COP'], 2)
-            self.P_cons = round(results['P_el'], 2)
-            self.cons_T = round(results['T_out'], 2)
-            self.Q_Supplied = round(results['P_th'], 2)
-            if self.Q_Supplied > self.Q_Demand:
-                self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
-                self.Q_Supplied = self.Q_Demand
-                self.P_cons *= self.on_fraction
+        if self.calc_mode != 'fixed':
+            self._etas_heatload_id()
 
-        else:
+        if not self.skip_step:
 
-            if self.calc_mode == 'fixed':
-                self.heatload_min = 5000
-                self.heatload_max = 11040
+            if self.calc_mode == 'hplib':
+
+                if self.Q_Demand < self.heatload_min:
+                    self.skip_step = True
+
+                if self.cond_in_T > (self.cons_T_max - 5):
+                    self.skip_step = True
+
+                if not self.skip_step:
+                    results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
+                                               t_amb=self.T_amb, mode=1)
+                    self.cond_m = round(results['m_dot'], 2)
+                    self.COP = round(results['COP'], 2)
+                    self.P_cons = round(results['P_el'], 2)
+                    self.cons_T = round(results['T_out'], 2)
+                    self.Q_Supplied = round(results['P_th'], 2)
+                    if self.Q_Supplied > self.Q_Demand:
+                        self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
+                        self.Q_Supplied = self.Q_Demand
+                        self.P_cons *= self.on_fraction
+                        self.cond_m *= self.on_fraction
+                else:
+                    self.step_error()
+
+            elif self.calc_mode == 'fixed':
+
+                self.COP = self.COP_fixed
+                self.Q_Supplied = self.HC_fixed
+                self.cond_m = self.cond_m_fixed
+                self.P_cons = self.Q_Supplied/self.COP
+                self.cons_T = self.cond_in_T + self.Q_Supplied / self.cond_m / 4184
+
+                if self.Q_Supplied > self.Q_Demand:
+                    self.on_fraction = round(self.Q_Demand / self.Q_Supplied, 2)
+                    self.Q_Supplied = self.Q_Demand
+                    self.P_cons *= self.on_fraction
+                    self.cond_m *= self.on_fraction
+
             else:
-                self._etas_heatload_id()
 
-            if self.Q_Demand < self.heatload_min:
-                self.skip_step = True
-            elif self.Q_Demand > self.heatload_max:
-                self.Q_Supplied = self.heatload_max
-                Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
-            else:
-                self.Q_Supplied = self.Q_Demand
-                Q_Supply_Excess = self.heatload_max - self.Q_Supplied
+                if self.Q_Demand < self.heatload_min:
+                    self.skip_step = True
+                elif self.Q_Demand > self.heatload_max:
+                    self.Q_Supplied = self.heatload_max
+                    Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
+                else:
+                    self.Q_Supplied = self.Q_Demand
+                    Q_Supply_Excess = self.heatload_max - self.Q_Supplied
 
-            if not self.skip_step:
+                if not self.skip_step:
 
-                if self.calc_mode == 'fast':
-                    heat_source_T_idx = str(self._take_closest(list(map(int, self.COP_m_data.keys())), self.heat_source_T))
-                    cond_in_T_idx = str(self._take_closest(list(map(int, self.COP_m_data[heat_source_T_idx].keys())),
-                                                           self.cond_in_T))
-                    HL_idx = str(self._take_closest(list(map(float, self.COP_m_data[heat_source_T_idx][cond_in_T_idx].keys())),
-                                                    self.Q_Supplied))
-                    try:
-                        self.cond_m = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['cond_m']
-                        self.COP = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['COP']
-                    except:
-                        self.step_error()
-
-                    if self.cond_m > 0:
-                        self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
-                        if self.cons_T > self.cons_T_max:
-                            self.cons_T = self.cons_T_max
-                            self.Q_Supplied = self.cond_m * 4184 * (self.cons_T - self.cond_in_T)
-                        self.P_cons = self.Q_Supplied/self.COP
-                    else:
-                        self.step_error()
-
-                elif self.calc_mode == 'fixed':
-
-                    self.cond_m = 0.52
-                    self.COP = 2
-                    self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
-                    self.P_cons = self.Q_Supplied/self.COP
-
-                elif self.calc_mode == 'detailed':
-
-                    if id_old != self.idx:
+                    if self.calc_mode == 'fast':
+                        heat_source_T_idx = str(self._take_closest(list(map(int, self.COP_m_data.keys())), self.heat_source_T))
+                        cond_in_T_idx = str(self._take_closest(list(map(int, self.COP_m_data[heat_source_T_idx].keys())),
+                                                               self.cond_in_T))
+                        HL_idx = str(self._take_closest(list(map(float, self.COP_m_data[heat_source_T_idx][cond_in_T_idx].keys())),
+                                                        self.Q_Supplied))
                         try:
-                            self._design_hp()
+                            self.cond_m = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['cond_m']
+                            self.COP = self.COP_m_data[heat_source_T_idx][cond_in_T_idx][HL_idx]['COP']
                         except:
                             self.step_error()
 
-                    if not self.skip_step:
-                        self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
-                        self.nw.get_conn('consumer cycle closer:out1_condenser recirculation pump:in1').set_attr(T=self.cond_in_T)
-                        self.LWE = self.heat_source_T - 5
-                        self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LWE)
-                        self.nw.get_comp('consumer').set_attr(Q=-self.Q_Supplied)
-                        try:
-                            self.nw.solve('offdesign', design_path='heat_pump')
-                            self.cond_m = self.nw.get_conn('condenser:out2_consumer:in1').m.val
-                            self.cons_T = self.nw.get_conn('condenser:out2_consumer:in1').T.val
+                        if self.cond_m > 0:
+                            self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
+                            if self.cons_T > self.cons_T_max:
+                                self.cons_T = self.cons_T_max
+                                self.Q_Supplied = self.cond_m * 4184 * (self.cons_T - self.cond_in_T)
+                            self.P_cons = self.Q_Supplied/self.COP
+                            self.Q_evap = -(self.Q_Supplied - self.P_cons -50)
+                        else:
+                            self.step_error()
+
+                    elif self.calc_mode == 'detailed':
+
+                        if id_old != self.idx:
+                            try:
+                                self._design_hp()
+                            except:
+                                self.step_error()
                             self.p_cop_calc()
-                        except:
-                            self.step_error()
 
-            else:
-                self.step_error()
+                        if not self.skip_step:
+                            self.nw.get_conn('source ambient:out1_ambient pump:in1').set_attr(T=self.heat_source_T)
+                            self.nw.get_conn('consumer cycle closer:out1_condenser recirculation pump:in1').set_attr(T=self.cond_in_T)
+                            if 'fixed_evap_m' not in self.hp_model.lower():
+                                self.LFE = self.heat_source_T - 5
+                                self.nw.get_conn('evaporator:out1_sink ambient:in1').set_attr(T=self.LFE)
+                            self.nw.get_comp('consumer').set_attr(Q=-self.Q_Supplied)
+                            try:
+                                self.nw.solve('offdesign', design_path='heat_pump')
+                                self.cond_m = self.nw.get_conn('condenser:out2_consumer:in1').m.val
+                                self.cons_T = self.nw.get_conn('condenser:out2_consumer:in1').T.val
+                                self.p_cop_calc()
+                            except:
+                                self.step_error()
+
+                else:
+                    self.step_error()
+        else:
+            self.step_error()
 
     def step_error(self):
         self.skip_step = True
@@ -491,6 +551,7 @@ class Heat_Pump_Des():
         self.Q_Supplied = 0
         self.cond_m = 0
         self.cons_T = 0
+        self.Q_evap = 0
 
 
 
@@ -498,47 +559,31 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        'hp_model': 'Air_60kW',
+        'hp_model': 'Air_30kW_1stage',
         'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
-        'Q_Demand': 60100,
-        'calc_mode': 'detailed'
+        'Q_Demand': 32500,
+        'calc_mode': 'fixed',
+        'cond_m': 0.5,
+        'COP': 3.5,
+        'heating capacity': 15000,
     }
 
+    # with open(COP_M_DATA_FILE, "r") as read_file_1:
+    #     COP_m_data_all = json.load(read_file_1)
+    #     COP_m_data = COP_m_data_all[params_air['hp_model']]
+    # heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=COP_m_data)
     heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
-    inputs_air_1 = {'heat_source_T': 8, 'Q_Demand': 48500, 'cond_in_T': 30, 'T_amb': 8}
+
+    inputs_air_1 = {'heat_source_T': 15.66, 'Q_Demand': 158000, 'cond_in_T': 39.66, 'T_amb': 15.66}
 
     heat_pump_1.step(inputs_air_1)
 
     print('P : ', heat_pump_1.P_cons)
     print('COP : ', heat_pump_1.COP)
     print('cond_m :',  heat_pump_1.cond_m)
-    # print('cond_m : ', heat_pump_1.nw.get_conn('condenser:out2_consumer:in1').m.val)
+    print('eta_s : ', heat_pump_1.etas_des)
+    print('cmp_stages : ', heat_pump_1.cmp_stages)
 
-    # inputs_air_2 = {'heat_source_T': 7, 'Q_Demand': 15220, 'cons_T': 45}
-    #
-    # heat_pump_1.step(inputs_air_2)
-    # print('P : ', heat_pump_1.P_cons)
-    # print('COP : ', heat_pump_1.COP)
-    # # print('cond_m : ', heat_pump_1.nw.get_conn('condenser:out2_consumer:in1').m.val)
-    #
-    # params_water = {
-    #     'heat_source': 'water',
-    #     'heat_source_T': 12,
-    #     'cons_T': 35,
-    # }
-    #
-    # heat_pump_2 = Heat_Pump_Des(params_water)
-    # inputs_water_1 = {'heat_source_T': 12, 'Q_Demand': 16700, 'cons_T': 35}
-    #
-    # heat_pump_2.step(inputs_water_1)
-    # print('P : ', heat_pump_2.P_cons)
-    # print('COP : ', heat_pump_2.COP)
-    #
-    # inputs_water_2 = {'heat_source_T': 9, 'Q_Demand': 15900, 'cons_T': 30}
-    #
-    # heat_pump_2.step(inputs_water_2)
-    # print('P : ', heat_pump_2.P_cons)
-    # print('COP : ', heat_pump_2.COP)

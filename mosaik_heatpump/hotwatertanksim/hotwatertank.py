@@ -158,13 +158,14 @@ class HotWaterTank():
             diameter = (params['volume'] * 1e6 / (np.pi * self.height)) ** 0.5 * 2
 
         # only needed during initialization
-        self.surface_between_layers = np.pi * (diameter / 3e3) ** 2  # m2
+        self.surface_between_layers = np.pi * (diameter / 2e3) ** 2  # m2
 
         self.mass = np.pi * (diameter / 2e3) ** 2 * self.height
 
         # create layers
         self.layers = []
         if 'n_layers' in params:
+            n_layers = params['n_layers']
             if isinstance(init_vals['layers']['T'], list):
                 if len(init_vals['layers']['T']) == 2:  # temperature range
                     delta_T = init_vals['layers']['T'][1] - init_vals['layers']['T'][0]
@@ -216,6 +217,9 @@ class HotWaterTank():
                 layer_params['bottom_top'] = bottom_top
                 layer_params['T'] = T_init[idx]
                 self.layers.append(Layer(layer_params))
+
+        # height of each layer, used in the calculation of heat transfer between layers
+        self.layer_height = self.height / n_layers / 1000
 
         # create connections
         self.connections = dict()
@@ -327,13 +331,9 @@ class HotWaterTank():
 
         # calculate heatflow to environment
         for idx, layer in enumerate(self.layers):
-            # outer_surface = np.pi * layer.diameter / 1e3 * (layer.top
-            #        - layer.bottom) / 1e3
-            # if idx == 0 or idx == len(self.layers) - 1:
-            #    outer_surface += np.pi * (layer.diameter / 2e3)**2
+
             heatflow = ((self.T_env - layer.T) * layer.outer_surface *
                         self.htc_walls)
-            # print('heatflow_layer_%s: %s' % (idx, heatflow))
             layer.add_heatflow(heatflow)
 
         # calculate heatflow caused by heating rods
@@ -343,9 +343,8 @@ class HotWaterTank():
 
         # calculate heatflow between layers
         for layer, upper_layer in zip(self.layers[:-1], self.layers[1:]):
-            # boundary_surface = np.pi * (layer.diameter / 3e3)**2
             heatflow = ((layer.T - upper_layer.T)
-                        * self.surface_between_layers * self.htc_layers)
+                        * self.surface_between_layers * self.htc_layers) / self.layer_height
             upper_layer.add_heatflow(heatflow)
             layer.add_heatflow(-heatflow)
 
@@ -354,10 +353,8 @@ class HotWaterTank():
             m = layer.volume * RHO
             delta_Q = 0
             for massflow in layer.massflows:
-                # print(massflow.T, massflow.F)
                 delta_Q += (massflow.F * step_size * RHO * (massflow.T + 273)
                             * C_W)
-            # print(layer.heatflows)
             for heatflow in layer.heatflows:
                 delta_Q += heatflow * step_size
             layer.T += delta_Q / (m * C_W)
@@ -399,6 +396,11 @@ class HotWaterTank():
     @property
     def snapshot(self):
         """serialize to json"""
+        return jsonpickle.encode(self)
+
+    @property
+    def snapshot_connections(self):
+        """serialize connections to json"""
         return jsonpickle.encode(self.connections)
 
     @property
@@ -528,8 +530,6 @@ class Connection(object):
     def __init__(self, params, layers):
         self.layers = layers  # reference to layers
         self.pos = params['pos']
-        if 'type' in params:
-            self.type = params['type']
         self._F = 0  # flow [l/s]
         self._T = None  # °C
         self._T_buffer = []  # °C
@@ -618,7 +618,7 @@ class HeatingRod(object):
         self.pos = params['pos']
         self.T_max = params['T_max']
         self.P_th_stages = np.array(params['P_th_stages'])  # power stages in W
-        self.eta = params['eta']
+        self.eta = params['eta'] # efficiency of the electric heater
         for idx, layer in enumerate(layers):
             if layer.bottom <= self.pos < layer.top:
                 self.corresponding_layer = layer

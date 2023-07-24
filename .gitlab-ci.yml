@@ -1,4 +1,4 @@
-image: python:3.8.10-slim-buster
+image: python:3.8.17-slim-buster
 
 variables:
     GIT_DEPTH: 1
@@ -6,35 +6,53 @@ variables:
 stages:
     -   test
     -   release
+    -   pre_release
 
-
-python37:
-    image: python:3.7.10-slim-buster
-    script:
-        -   python -m pip install --quiet --upgrade -r requirements.txt
-        -   tox -e py37
-    stage: test
 
 python38:
-    image: python:3.8.10-slim-buster
+    image: python:3.8.17-slim-buster
     script:
         -   python -m pip install --quiet --upgrade -r requirements.txt
         -   tox -e py38
     stage: test
 
-#python39:
-#    image: python:3.9.5-slim-buster
-#    script:
-#        -   python -m pip install --quiet --upgrade -r requirements.txt
-#        -   tox -e py39
-#    stage: test
+python39:
+    image: python:3.9.17-slim-buster
+    script:
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   tox -e py39
+    stage: test
+
+python310:
+    image: python:3.10.12-slim-buster
+    script:
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   tox -e py310
+    stage: test
+
+python311:
+    image: python:3.11.4-slim-buster
+    script:
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   tox -e py311
+    stage: test
+
+python311_scenarios:
+    image: python:3.11.4-slim-buster
+    script:
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   python examples/run_heatpump.py
+        -   python examples/run_tank.py
+        -   python examples/Scenario_same_time_loop.py
+        -   python examples/Scenario_time_shifted.py
+    stage: test
 
 
-pypi:
+pypi_release:
     artifacts:
         paths:
             -   dist/*.whl
-    image: python:3.8.10-slim-buster
+    image: python:3.11.4-slim-buster
     before_script:
         -   echo $MOSAIK_PYPI_USER
     script:
@@ -46,3 +64,21 @@ pypi:
     stage: release
     only:
       - tags
+
+pypi_test:
+    artifacts:
+        paths:
+            -   dist/*.whl
+    image: python:3.11.4-slim-buster
+    before_script:
+        -   echo $MOSAIK_PYPI_USER
+    script:
+        -   python -m pip install --quiet --upgrade twine wheel
+        -   python -m pip install --quiet --upgrade -r requirements.txt
+        -   python setup.py sdist bdist_wheel
+        -   twine check dist/*
+        -   twine upload --repository-url https://test.pypi.org/legacy/ --username $MOSAIK_PYPI_USER --password $MOSAIK_PYPI_PASSWORD --verbose dist/*
+    stage: pre_release
+    rules:
+      - if: '$CI_COMMIT_TAG == null'
+        when: manual

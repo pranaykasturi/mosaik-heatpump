@@ -10,9 +10,8 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
     def __init__(self):
         # dummy metadata, actual metadata is set in init()
         meta = {
-                'type': 'time_based',
+                'type': 'time-based',
                 'models': {},
-                'extra_methods': ['add_async_request']
                 }
         super().__init__(meta)
         self.models = dict()
@@ -20,16 +19,18 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
         self.eid_prefix = 'HotWaterTank_'
         self.step_size = None  # [sec]
         self.async_requests = dict()
-        self.i=0
+        self.time = None
+        self.first_iteration = None
+        self.step_executed = False
 
-    def init(self, sid, time_resolution, step_size, config):
+    def init(self, sid, time_resolution, step_size, config, same_time_loop=False):
         self.time_resolution = float(time_resolution)
         if self.time_resolution != 1.0:
             print('WARNING: %s got a time_resolution other than 1.0, which \
                 can not be handled by this simulator.', sid)
         self.sid = sid  # simulator id
         self.step_size = step_size
-        attrs = ['_', 'snapshot', 'sh_supply', 'sh_demand', 'dhw_demand', 'dhw_supply', 'hp_demand', 'T_env', 'T_mean', 'mass']
+        attrs = ['_', 'snapshot', 'snapshot_connections', 'T_env', 'T_mean', 'mass', 'step_executed']
         if 'n_sensors' in config:
             for i in range(config['n_sensors']):
                 attrs.append('sensor_%02d.T' % i)
@@ -53,7 +54,10 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
             'params': ['params', 'init_vals', 'snapshot'],
             'attrs': attrs
         }
-            
+
+        if same_time_loop:
+            self.meta['type'] = 'event-based'
+
         return self.meta
     
     def create(self, num, model, params=None, init_vals=None, snapshot=None):
@@ -68,48 +72,38 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
                 self.models[eid] = jsonpickle.decode(snapshot)
             entities.append({'eid': eid, 'type': model})
 
-        return entities 
-
-    def add_async_request(self, src_id, dest_id, *attr_pairs):
-        if not src_id in self.async_requests:
-            self.async_requests[src_id] = {dest_id: {}}
-        if not dest_id in self.async_requests[src_id]:
-            self.async_requests[src_id][dest_id] = {}
-        for attr_pair in attr_pairs:
-            src_attr, dest_attr = attr_pair
-            self.async_requests[src_id][dest_id].update({src_attr: dest_attr})
-        #print('async_reqs: %s' % self.async_requests)
-
+        return entities
 
     def step(self, time, inputs, max_advance):
 
-        # print('hwt inputs: %s' % inputs)
+        if self.meta['type'] == 'event-based':
+            if self.time != time:
+                self.first_iteration = True
+                self.step_executed = False
+            else:
+                self.first_iteration = False
+            self.time = time
         for eid, attrs in inputs.items():
             for attr, src_ids in attrs.items():
                 if attr == '_':
                     pass
                 else:
-                    for  src_id, val in src_ids.items():
+                    for src_id, val in src_ids.items():
                         set_nested_attr(self.models[eid], attr, val)
+        if self.meta['type'] == 'event-based':
+            if not self.first_iteration and not self.step_executed:
+                for eid, model in self.models.items():
+                    model.step(self.step_size)
+                    self.step_executed = True
+        else:
+            for eid, model in self.models.items():
+                model.step(self.step_size)
 
-        for eid, model in self.models.items():
-            model.step(self.step_size)
-
-        inputs = {}
-        # print('async_reqs: %s' % self.async_requests)
-        for src_id, dest_ids in self.async_requests.items():
-            eid = src_id.split('.')[1] 
-            inputs[src_id] = {}
-            for dest_id, src_attrs in dest_ids.items():
-                inputs[src_id][dest_id] = {}
-                for src_attr, dest_attr in src_attrs.items():
-                    inputs[src_id][dest_id][dest_attr] = get_nested_attr(
-                            self.models[eid], src_attr)
-
-        # print('hwt inputs: %s' % inputs)
-        yield self.mosaik.set_data(inputs)
-
-        return (time + self.step_size)
+        if self.meta['type'] == 'event-based':
+            if self.step_executed and (time + self.step_size) <= self.mosaik.world.until:  #
+                return (time + self.step_size)
+        else:
+            return (time + self.step_size)
 
     def get_data(self, outputs):
         data = {}
@@ -119,6 +113,8 @@ class HotWaterTankSimulator(mosaik_api.Simulator):
                 if attr not in self.meta['models']['HotWaterTank'][
                         'attrs']:
                     raise ValueError('Unknown output attribute: %s' % attr)
+                if self.meta['type'] == 'event-based':
+                    data['time'] = self.time
                 data[eid][attr] = get_nested_attr(self.models[eid], attr)
         return data
 

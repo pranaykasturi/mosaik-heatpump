@@ -1,6 +1,9 @@
 jsonpickle
 mosaik>=3.0.0
 mosaik-api>=3.0
+mosaik-csv
+mosaik-hdf5
 pytest
 tespy>=0.4.2
 tox
+hplib

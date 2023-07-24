@@ -23,6 +23,8 @@ class Heat_Pump_State():
         """The heat demand of the consumer in W"""
         self.Q_Supplied = 0
         """The heat supplied to the consumer in W"""
+        self.Q_evap = 0
+        """The heat removed in the evaporator in W"""
         self.cons_T = 0
         """The temperature at which heat is supplied to the consumer (in °C)"""
         self.cond_in_T = 0
@@ -35,6 +37,8 @@ class Heat_Pump_State():
         """The ambient temperature (in °C)"""
         self.cond_m = 0
         """The mass flow rate of water in the condenser of the heat pump (in kg/s)"""
+        self.cond_m_neg = 0
+        self.step_executed = False
 
 
 class Heat_Pump_Inputs():
@@ -51,11 +55,8 @@ class Heat_Pump_Inputs():
         self.heat_source_T = params.get('heat_source_T')
         """The temperature of the heat source (in °C)"""
 
-        self.heat_source_T = params.get('T_amb')
+        self.T_amb = params.get('T_amb')
         """The ambient temperature (in °C)"""
-
-        # self.cons_T = params.get('cons_T')
-        # """The temperature at which heat is supplied to the consumer (in °C)"""
 
         self.cond_in_T = params.get('cond_in_T')
         """The temperature at which the water reenters the condenser (in °C)"""
@@ -115,7 +116,6 @@ class Heat_Pump():
 
         step_inputs = {'heat_source_T': self.inputs.heat_source_T,
                        'Q_Demand': self.inputs.Q_Demand,
-                       # 'cons_T': self.inputs.cons_T,
                        'cond_in_T': self.inputs.cond_in_T,
                        'T_amb': self.inputs.T_amb
                        }
@@ -137,7 +137,10 @@ class Heat_Pump():
         self.state.P_Required = self.design.Heat_Pump.P_cons
         self.state.COP = self.design.Heat_Pump.COP
         self.state.Q_Supplied = self.design.Heat_Pump.Q_Supplied
+        self.state.Q_evap = self.design.Heat_Pump.Q_evap
         self.state.on_fraction = self.design.Heat_Pump.on_fraction
         self.state.cond_m = self.design.Heat_Pump.cond_m
+        self.state.cond_m_neg = - self.design.Heat_Pump.cond_m
         self.state.cons_T = self.design.Heat_Pump.cons_T
+        self.state.step_executed = True
 
