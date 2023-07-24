@@ -29,6 +29,11 @@ class Heat_Pump_Des():
         self.cons_T = params.get('cons_T', None)
         self.heat_source_T = params.get('heat_source_T', None)
 
+        # Parameters required for the 'fixed' calculation mode
+        self.COP_fixed = params.get('COP', None)
+        self.HC_fixed = params.get('heating capacity', None)
+        self.cond_m_fixed = params.get('cond_m', None)
+
         # Attributes of the heat pump
         self.LFE = None  # The temperature of the fluid leaving the evaporator
         self.LFE_des = None  # The temperature of the water leaving the condenser in design case
@@ -432,14 +437,12 @@ class Heat_Pump_Des():
 
         id_old = self.idx
 
-        if self.calc_mode == 'fixed':
-            self.heatload_min = 5000
-            self.heatload_max = 11040
-        else:
+        if self.calc_mode != 'fixed':
             self._etas_heatload_id()
 
         if not self.skip_step:
-            if 'hplib' in self.calc_mode:
+
+            if self.calc_mode == 'hplib':
 
                 if self.Q_Demand < self.heatload_min:
                     self.skip_step = True
@@ -462,6 +465,20 @@ class Heat_Pump_Des():
                         self.cond_m *= self.on_fraction
                 else:
                     self.step_error()
+
+            elif self.calc_mode == 'fixed':
+
+                self.COP = self.COP_fixed
+                self.Q_Supplied = self.HC_fixed
+                self.cond_m = self.cond_m_fixed
+                self.P_cons = self.Q_Supplied/self.COP
+                self.cons_T = self.cond_in_T + self.Q_Supplied / self.cond_m / 4184
+
+                if self.Q_Supplied > self.Q_Demand:
+                    self.on_fraction = round(self.Q_Demand / self.Q_Supplied, 2)
+                    self.Q_Supplied = self.Q_Demand
+                    self.P_cons *= self.on_fraction
+                    self.cond_m *= self.on_fraction
 
             else:
 
@@ -497,13 +514,6 @@ class Heat_Pump_Des():
                             self.Q_evap = -(self.Q_Supplied - self.P_cons -50)
                         else:
                             self.step_error()
-
-                    elif self.calc_mode == 'fixed':
-
-                        self.cond_m = 0.52
-                        self.COP = 2
-                        self.cons_T = self.cond_in_T + self.Q_Supplied/self.cond_m/4184
-                        self.P_cons = self.Q_Supplied/self.COP
 
                     elif self.calc_mode == 'detailed':
 
@@ -549,23 +559,22 @@ class Heat_Pump_Des():
 if __name__ == '__main__':
 
     params_air = {
-        'hp_model': 'Air_30kW_1stage_fixed_evap_m', #_1stage
-        # 'hp_model': 'LW 300(L)', #_1stage
+        'hp_model': 'Air_30kW_1stage',
         'heat_source': 'Air',
         'heat_source_T': 7,
         'cons_T': 35,
         'Q_Demand': 32500,
-        # 'calc_mode': 'hplib',
-        # 'calc_mode': 'detailed',
-        'calc_mode': 'fast',
-        'equivalent hp model':'Air_30kW_1stage_fixed_evap_m'
+        'calc_mode': 'fixed',
+        'cond_m': 0.5,
+        'COP': 3.5,
+        'heating capacity': 15000,
     }
 
-    with open(COP_M_DATA_FILE, "r") as read_file_1:
-        COP_m_data_all = json.load(read_file_1)
-        COP_m_data = COP_m_data_all[params_air['hp_model']]
-    heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=COP_m_data)
-    # heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
+    # with open(COP_M_DATA_FILE, "r") as read_file_1:
+    #     COP_m_data_all = json.load(read_file_1)
+    #     COP_m_data = COP_m_data_all[params_air['hp_model']]
+    # heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=COP_m_data)
+    heat_pump_1 = Heat_Pump_Des(params_air, COP_m_data=None)
 
 
     inputs_air_1 = {'heat_source_T': 15.66, 'Q_Demand': 158000, 'cond_in_T': 39.66, 'T_amb': 15.66}
