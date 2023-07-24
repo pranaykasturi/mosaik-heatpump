@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='mosaik-heatpump',
-    version='0.1.0',
+    version='0.2.0',
     author='Pranay Kasturi',
     author_email='mosaik@offis.de',
     description='Mosaik-heatpump provides a model of a residential heatpump system',
@@ -37,8 +37,10 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
