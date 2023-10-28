@@ -51,7 +51,7 @@ hwt = hwtsim.HotWaterTank(params=params, init_vals=init_vals)
 csv_data = csv.HWT()
 
 # Connect entities
-world.connect(csv_data, hwt, ('T_in', 'cc_in.T'), ('F_in', 'cc_in.F'), ('T_out',  'cc_out.T'), ('F_out', 'cc_out.F'))
+world.connect(csv_data, hwt, ('T_in', 'cc_in.T'), ('F_in', 'cc_in.F'), ('F_out', 'cc_out.F'))
 
 # storage
 db = world.start('DB', step_size=15*60, duration=END)
