@@ -2,9 +2,7 @@
 This module contains a simulation model of a Heat Pump based on the library TESPy.
 """
 
-# from ..model import Model
 from mosaik_heatpump.heatpump.Heat_Pump_Des import Heat_Pump_Des
-
 
 class Heat_Pump_Design():
     """Design of the Heat Pump based on the initial parameters"""
@@ -29,8 +27,6 @@ class Heat_Pump_State():
         """The temperature at which heat is supplied to the consumer (in °C)"""
         self.cond_in_T = 0
         """The temperature at which the water reenters the condenser (in °C)"""
-        self.heat_source = 0
-        """The source of heat for the heat pump ('water' or 'air')"""
         self.heat_source_T = 0
         """The temperature of the heat source (in °C)"""
         self.T_amb = 0
@@ -38,27 +34,26 @@ class Heat_Pump_State():
         self.cond_m = 0
         """The mass flow rate of water in the condenser of the heat pump (in kg/s)"""
         self.cond_m_neg = 0
+        """The negative of the mass flow rate of water in the condenser of the heat pump (in kg/s)"""
         self.step_executed = False
-
+        """The execution of the step function of the heat pump model"""
 
 class Heat_Pump_Inputs():
     """Inputs variables to the heat pump for each time step"""
-    __slots__ = ['Q_Demand', 'heat_source', 'heat_source_T', 'cons_T', 'step_size', 'cond_in_T', 'T_amb']
+    __slots__ = ['Q_Demand', 'heat_source_T', 'cons_T', 'step_size', 'cond_in_T', 'T_amb']
 
     def __init__(self, params):
-        self.Q_Demand = params.get('Q_Demand')
+
+        self.Q_Demand = None
         """The heat demand of the consumer in W"""
 
-        self.heat_source = params.get('heat_source')
-        """The source of heat ('water' or 'air')"""
-
-        self.heat_source_T = params.get('heat_source_T')
+        self.heat_source_T = None
         """The temperature of the heat source (in °C)"""
 
-        self.T_amb = params.get('T_amb')
+        self.T_amb = None
         """The ambient temperature (in °C)"""
 
-        self.cond_in_T = params.get('cond_in_T')
+        self.cond_in_T = None
         """The temperature at which the water reenters the condenser (in °C)"""
 
         self.step_size = None
@@ -69,26 +64,64 @@ class Heat_Pump():
     """
     Simulation model of a heat pump based on the library TESPy.
 
-    You have to provide the *params* dictionary that contains the parameters
-    required for the design of the heat pump. It will look like this::
+    Heat pump parameters are provided at instantiation by the dictionary **params**. The following dictionary contains
+    the parameters that are mandatory::
+
+        {
+            'calc_mode': 'hplib',
+            'hp_model': 'LW 300(L)',
+            'heat_source': 'air',
+        }
+
+    Explanation of the entries in the dictionary:
+
+    * **calc_mode**: The calculation mode that is used by the heat pump model. Currently, 'detailed', 'fast', 'hplib',
+    and 'fixed' calculation modes are available. The differences are explained in the documentation.
+    * **hp_model**: The specific model of the heat pump that must be simulated. The different models available currently
+    can be found in the documentation. This need not be specified for the 'fixed' calculation mode.
+    * **heat_source**: The fluid that acts as the source of heat for the heat pump, either 'water' or 'air'
+
+    If the 'hplib' calculation mode is chosen, the following parameter is required in addition to the mandatory ones::
+        {
+            'equivalent_hp_model': 'Air_30kW',
+        }
+
+    * **equivalent_hp_model**: The heat pump model from the saved data file whose limits of operation will be applied
+
+    Alternatively, the limits can be directly specified in the following parameter::
+        {
+            'hp_limits': { 'heat_source_T_min': -10, 'heat_source_T_max': 35, 'cons_T_min': 25, 'cons_T_max': 55,
+                           'heatload_min': 15000 }
+        }
+
+    For the 'hplib' calculation mode if the 'Generic' heat pump model is chosen, the following parameters are required
+    in addition to the mandatory ones::
 
         {
             'cons_T': 35,
             'heat_source_T': 12,
-            'T_amb': 12,
-            'heat_source': 'water' or 'air'
+            'P_th': 35000,
         }
 
-    -*cons_T* is the temperature, in °C, at which heat is supplied to the consumer. This can
-    be changed later in the simulation as well.
+    * **cons_T**: The temperature at which heat is supplied to the consumer (in °C).
+    * **heat_source_T**: The temperature at which the fluid (water or air) is available as the heat source (in °C).
+    * **P_th**: The heating capacity of the heat pump (in W).
 
-    -*heat_source_T* is the temperature, in °C, at which the ambient fluid (water or air)
-    is available as the heat source.
+    If the 'fixed' calculation mode is chosen, the following parameters are required in addition to the mandatory ones::
 
-    -*T_amb* is the ambient temperature, in °C.
+        {
+            'COP': 3.5,
+            'heating capacity': 35000,
+            'cond_m': 0.5,
+        }
 
-    -*heat_source* is the fluid, either 'water' or 'air', that acts as the heat source for
-    the system.
+    * **COP**: The COP of the heat pump.
+    * **heating_capacity**: The heating capacity of the heat pump (in W).
+    * **cond_m**: The mass flow rate of water in the condenser (in kg/s).
+
+    **Example**
+
+    .. literalinclude:: ../pysimmods/hotwatertanksim/example.py
     """
 
     __slots__ = ['design', 'state', 'inputs']
@@ -105,21 +138,14 @@ class Heat_Pump():
         :class:`.Heat_Pump_Model.Heat_Pump_Inputs` object"""
 
     def step(self):
-        """
-        perform simulation step
-
-        The power consumption of the heat pump in the offdesign mode
-        is calculated based on the consumer heat demand and the ambient
-        fluid temperature.
-
-        """
+        """Perform simulation step with step size step_size"""
 
         step_inputs = {'heat_source_T': self.inputs.heat_source_T,
                        'Q_Demand': self.inputs.Q_Demand,
                        'cond_in_T': self.inputs.cond_in_T,
                        'T_amb': self.inputs.T_amb
                        }
-
+        # Update the state of the heat pump for the inputs
         if self.inputs.Q_Demand is not None:
             self.state.Q_Demand = self.inputs.Q_Demand
 
@@ -132,8 +158,10 @@ class Heat_Pump():
         if self.inputs.cond_in_T is not None:
             self.state.cond_in_T = self.inputs.cond_in_T
 
+        # Perform the step of the heat pump model
         self.design.Heat_Pump.step(step_inputs)
 
+        # Update the state of the heat pump for the outputs
         self.state.P_Required = self.design.Heat_Pump.P_cons
         self.state.COP = self.design.Heat_Pump.COP
         self.state.Q_Supplied = self.design.Heat_Pump.Q_Supplied

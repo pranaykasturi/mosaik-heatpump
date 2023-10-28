@@ -1,3 +1,8 @@
+"""
+Mosaik interface for heat pump model
+
+"""
+
 import mosaik_api
 import multiprocessing as mp
 import json
@@ -54,7 +59,7 @@ class HeatPumpSimulator(mosaik_api.Simulator):
                 self.processes = num
 
         COP_m_data = None
-        if params['calc_mode'] == 'fast' or params['calc_mode'] == 'fixed_hl':
+        if params['calc_mode'] == 'fast':
             with open(JSON_COP_DATA, "r") as read_file_1:
                 COP_m_data_all = json.load(read_file_1)
                 COP_m_data = COP_m_data_all[params['hp_model']]
