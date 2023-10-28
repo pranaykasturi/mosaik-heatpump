@@ -24,7 +24,6 @@ class Heat_Pump_Des():
         self.calc_mode = params.get('calc_mode')
 
         # Parameters required if the 'hplib' calculation mode is chosen
-        self.hp_model = params.get('equivalent_hp_model', None)
         self.hp_limits = params.get('hp_limits', None)
 
         # Parameters required if 'Generic' heat pump is chosen in the 'hplib' calculation mode
@@ -71,6 +70,8 @@ class Heat_Pump_Des():
                 parameters = hpl.get_parameters(self.hp_model)
 
             self.hp = hpl.HeatPump(parameters)
+            # Update the heat pump model to the equivalent model for the control limits
+            self.hp_model = params.get('equivalent_hp_model', None)
 
         # Initiating the heat pump model for the detailed mode
         if 'detailed' in self.calc_mode.lower():
