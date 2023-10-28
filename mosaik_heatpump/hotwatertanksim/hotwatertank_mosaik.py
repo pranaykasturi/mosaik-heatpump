@@ -1,5 +1,5 @@
 """
-Mosaik interface for hot water tank
+Mosaik interface for hot water tank model
 
 """
 import mosaik_api
