@@ -1,3 +1,7 @@
+"""
+Mosaik interface for controller model
+
+"""
 import mosaik_api
 from mosaik_heatpump.controller.controller import Controller
 
@@ -7,11 +11,11 @@ META = {
         'Controller': {
             'public': True,
             'params': ['params'],
-            'attrs': ['_', 'T_amb', 'T_amb_hwt', 'heat_source_T', 'hp_demand', 'heat_supply', 'heat_demand', 'sh_demand', 'sh_supply',
-                      'dhw_demand', 'dhw_supply', 'sh_in_F', 'sh_in_T', 'sh_out_F', 'dhw_in_F', 'dhw_in_T', 'dhw_out_F',
-                      'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T', 'hp_supply', 'hwt_connections', 'T_mean', 'hwt_mass',
-                      'hwt_hr_P_th_set', 'hp_on_fraction', 'hp_cond_m', 'sh_out_T', 'dhw_out_T', 'P_hr_sh', 'P_hr_dhw',
-                      'T_room', 'bottom_layer_T', 'top_layer_T', 'execute_step', 'PVT_T_in', 'PVT_T_out'],
+            'attrs': ['_', 'T_amb', 'T_amb_hwt', 'heat_source_T', 'hp_demand', 'heat_supply', 'heat_demand',
+                      'sh_demand', 'sh_supply', 'dhw_demand', 'dhw_supply', 'sh_in_F', 'sh_in_T', 'sh_out_F',
+                      'dhw_in_F', 'dhw_in_T', 'dhw_out_F', 'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T', 'hp_supply',
+                      'T_mean_hwt', 'hwt_mass', 'hwt_hr_P_th_set', 'hp_on_fraction', 'hp_cond_m', 'sh_out_T',
+                      'dhw_out_T', 'P_hr_sh', 'P_hr_dhw', 'T_room', 'bottom_layer_T', 'top_layer_T'],
         },
     },
 }
@@ -64,6 +68,7 @@ class ControllerSimulator(mosaik_api.Simulator):
                 self.first_iteration = True
                 self.final_iteration = False
                 self.step_executed = False
+                self.time = time
             elif self.step_executed:
                 if not self.final_iteration:
                     self.first_iteration = False
@@ -71,10 +76,6 @@ class ControllerSimulator(mosaik_api.Simulator):
                 else:
                     self.final_iteration = False
         for eid, attrs in inputs.items():
-            if self.meta['type'] == 'event-based':
-                if time != self.time:
-                    self.time = time
-                    setattr(self.models[eid], 'execute_step', True)
             for attr, src_ids in attrs.items():
                 if len(src_ids) > 1:
                     raise ValueError('Two many inputs for attribute %s' % attr)
