@@ -15,8 +15,8 @@ META = {
         'HeatPump': {
             'public': True,
             'params': ['params'],
-            'attrs': ['Q_Demand', 'Q_Supplied', 'heat_source_T', 'heat_source', 'cons_T', 'P_Required', 'COP',
-                      'cond_m', 'cond_in_T', 'T_amb', 'on_fraction', 'cond_m_neg', 'Q_evap', 'step_executed'],
+            'attrs': ['Q_Demand', 'Q_Supplied', 'heat_source_T', 'cons_T', 'P_Required', 'COP','cond_m', 'cond_in_T',
+                      'T_amb', 'on_fraction', 'cond_m_neg', 'Q_evap', 'step_executed'],
         },
     },
 }

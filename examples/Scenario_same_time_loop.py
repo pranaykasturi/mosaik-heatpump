@@ -135,8 +135,8 @@ for i in range(len(model_list)):
 
 
     world.connect(heat_load[0], hdf5, 'T_amb', 'SH Demand [kW]', 'DHW Demand [L]')
-    world.connect(heatpumps[0], hdf5, 'Q_Demand', 'Q_Supplied', 'T_amb', 'heat_source_T', 'heat_source',
-                  'cons_T', 'P_Required', 'COP', 'cond_m', 'cond_in_T', 'on_fraction')
+    world.connect(heatpumps[0], hdf5, 'Q_Demand', 'Q_Supplied', 'T_amb', 'heat_source_T', 'cons_T', 'P_Required',
+                  'COP', 'cond_m', 'cond_in_T', 'on_fraction')
 
     world.connect(ctrls[0], hdf5, 'heat_demand', 'heat_supply', 'hp_demand', 'sh_supply', 'sh_demand', 'hp_supply',
                   'sh_in_F', 'sh_in_T', 'sh_out_F', 'sh_out_T','dhw_in_F', 'dhw_in_T', 'dhw_out_F', 'dhw_out_T',
