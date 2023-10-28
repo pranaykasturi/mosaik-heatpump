@@ -23,6 +23,10 @@ class Heat_Pump_Des():
         self.heat_source = params.get('heat_source')
         self.calc_mode = params.get('calc_mode')
 
+        # Parameters required if the 'hplib' calculation mode is chosen
+        self.hp_model = params.get('equivalent_hp_model', None)
+        self.hp_limits = params.get('hp_limits', None)
+
         # Parameters required if 'Generic' heat pump is chosen in the 'hplib' calculation mode
         self.P_th = params.get('P_th', None)
         self.cons_T = params.get('cons_T', None)
@@ -67,8 +71,6 @@ class Heat_Pump_Des():
                 parameters = hpl.get_parameters(self.hp_model)
 
             self.hp = hpl.HeatPump(parameters)
-            self.hp_model = params.get('equivalent_hp_model', None)
-            self.hp_limits = params.get('hp_limits', None)
 
         # Initiating the heat pump model for the detailed mode
         if 'detailed' in self.calc_mode.lower():
