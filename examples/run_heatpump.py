@@ -19,7 +19,7 @@ SIM_CONFIG = {
 
 START = '01.01.2016 00:00'
 END = 10 * 15 * 60  # 2.5 Hours or 150 mins
-HEAT_LOAD_DATA = 'data/heatpump_data.csv'
+HEAT_LOAD_DATA = './data/heatpump_data.csv'
 date_format = 'DD.MM.YYYY HH:mm'
 
 # Create World
@@ -31,9 +31,6 @@ csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA, date_format=d
 
 params = {'hp_model': 'Air_8kW',
           'heat_source': 'air',
-          'cons_T': 35,
-          'heat_source_T': 2,
-          'T_amb': 2,
           'calc_mode': 'fast',
           }
 
@@ -47,7 +44,7 @@ world.connect(heat_load, heatpump, ('Q_Demand','Q_Demand'), ('heat_source_T','he
 
 # Initializing and instantiating a database component:
 db = world.start('DB', step_size=15*60, duration=END)
-hdf5 = db.Database(filename='heat_pump_trial_1.hdf5')
+hdf5 = db.Database(filename='hp_trial_1.hdf5')
 
 world.connect(heatpump, hdf5, 'Q_Demand', 'Q_Supplied', 'heat_source_T', 'P_Required', 'COP')
 
