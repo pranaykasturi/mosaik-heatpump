@@ -104,7 +104,7 @@ for i in range(len(model_list)):
     params_hp['hp_model'] = model_list[i]
 
     if 'hplib' in params_hp['calc_mode']:
-        params_hp['equivalent hp model'] = 'Air_30kW_1stage'
+        params_hp['equivalent_hp_model'] = 'Air_30kW_1stage'
     elif 'fixed' in params_hp['calc_mode']:
         params_hp['COP'] = 3.5
         params_hp['heating capacity'] = 15000
@@ -119,7 +119,7 @@ for i in range(len(model_list)):
     world.connect(heat_load[0], ctrls[0], ('T_amb', 'T_amb'), ('T_amb', 'heat_source_T'), ('SH Demand [kW]', 'sh_demand'),
                   ('DHW Demand [L]', 'dhw_demand'), ('dhw_in_T', 'dhw_in_T'))
 
-    world.connect(hwts[0], ctrls[0], ('T_mean', 'T_mean'), ('mass', 'hwt_mass'),
+    world.connect(hwts[0], ctrls[0], ('T_mean', 'T_mean_hwt'), ('mass', 'hwt_mass'),
                   ('sensor_00.T', 'bottom_layer_T'), ('sensor_04.T', 'top_layer_T'),
                   ('dhw_out.T', 'dhw_out_T'), ('sh_out.T', 'sh_out_T'), ('hp_out.T', 'hp_out_T'))
 
