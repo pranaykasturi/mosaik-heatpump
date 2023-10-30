@@ -3,9 +3,7 @@ import sys
 import mosaik
 import time
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 
 sim_config = {
     'CSV': {
@@ -25,6 +23,7 @@ sim_config = {
     },
 }
 
+# The start date, duration, and step size for the simulation
 END = 3 * 60 * 60
 START = '01.01.2020 00:00'
 STEP_SIZE = 60 * 1
@@ -70,6 +69,7 @@ params_ctrl = {
     'control_strategy': '1'
 }
 
+# The different types of heat pumps and calculation modes that are simulated
 model_list = ['Air_30kW_1stage', 'Air_30kW_1stage', 'LW 300(L)', None]
 calc_mode_list = ['detailed', 'fast', 'hplib', 'fixed']
 filename_list = ['detailed', 'fast', 'hplib', 'fixed']
@@ -116,6 +116,7 @@ for i in range(len(model_list)):
 
     ctrls = ctrlsim.Controller.create(1, params=params_ctrl)
 
+    # connections between the different models
     world.connect(heat_load[0], ctrls[0], ('T_amb', 'T_amb'), ('T_amb', 'heat_source_T'), ('SH Demand [kW]', 'sh_demand'),
                   ('DHW Demand [L]', 'dhw_demand'), ('dhw_in_T', 'dhw_in_T'))
 
