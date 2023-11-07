@@ -1,3 +1,8 @@
+"""
+The heat pump tutorial provided in TESPy's documentation is followed
+Link: https://tespy.readthedocs.io/en/main/tutorials/heat_pump_steps.html
+"""
+
 from tespy.components import Condenser
 from tespy.components import CycleCloser
 from tespy.components import Drum
