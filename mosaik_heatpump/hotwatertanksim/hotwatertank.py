@@ -134,7 +134,7 @@ class HotWaterTank():
 
     **Example**
 
-    .. literalinclude:: ../pysimmods/hotwatertanksim/example.py
+    .. literalinclude:: ../../examples/run_tank.py
 
     """
 
