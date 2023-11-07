@@ -1,0 +1,21 @@
+version: "1.0.0"
+
+build:
+  os: "Windows 10"
+  tools:
+    python: "3.8"
+
+python:
+  install:
+    - requirements: requirements.txt
+    # Install our python package before building the docs
+    - method: pip
+      path: .
+
+sphinx:
+  configuration: docs/source/conf.py
+  fail_on_warning: true
+
+formats:
+  - pdf
+  - epub
