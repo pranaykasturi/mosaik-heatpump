@@ -2,12 +2,12 @@
 This module contains a simulation model of a Heat Pump based on the library TESPy.
 """
 
-from mosaik_heatpump.heatpump.Heat_Pump_Des import Heat_Pump_Des
+from mosaik_heatpump.heatpump.Heat_Pump_Design import Heat_Pump_Design
 
-class Heat_Pump_Design():
-    """Design of the Heat Pump based on the initial parameters"""
+class Heat_Pump_Initiation():
+    """Initiation of the Heat Pump based on the initial parameters"""
     def __init__(self, params, COP_m_data):
-        self.Heat_Pump = Heat_Pump_Des(params, COP_m_data)
+        self.Heat_Pump = Heat_Pump_Design(params, COP_m_data)
 
 
 class Heat_Pump_State():
@@ -62,7 +62,7 @@ class Heat_Pump_Inputs():
 
 class Heat_Pump():
     """
-    Simulation model of a heat pump based on the library TESPy.
+    Simulation model of a heat pump based on the libraries TESPy and hplib.
 
     Heat pump parameters are provided at instantiation by the dictionary **params**. The following dictionary contains
     the parameters that are mandatory::
@@ -121,15 +121,15 @@ class Heat_Pump():
 
     **Example**
 
-    .. literalinclude:: ../pysimmods/hotwatertanksim/example.py
+    .. literalinclude:: ../../examples/run_tank.py
     """
 
     __slots__ = ['design', 'state', 'inputs']
 
     def __init__(self, params, COP_m_data):
-        self.design = Heat_Pump_Design(params, COP_m_data)
+        self.design = Heat_Pump_Initiation(params, COP_m_data)
         """stores the design of the heat pump in a
-        :class:`.Heat_Pump_Model.Heat_Pump_Design` object"""
+        :class:`.Heat_Pump_Model.Heat_Pump_Initiation` object"""
         self.state = Heat_Pump_State()
         """stores the state variables of the heat pump in a
         :class:`.Heat_Pump_Model.Heat_Pump_State` object"""

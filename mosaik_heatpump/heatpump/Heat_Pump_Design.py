@@ -14,7 +14,7 @@ import json
 # Saved design data and limits for the different heat pump models
 JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'eta_s_data.json'))
 
-class Heat_Pump_Des():
+class Heat_Pump_Design():
 
     def __init__(self, params, COP_m_data=None):
 
