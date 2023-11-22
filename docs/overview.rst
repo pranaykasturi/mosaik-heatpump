@@ -1,5 +1,5 @@
-mosaik-heatpump
-===============
+Overview
+========
 
 This package provides models for the simulation of heating systems- consisting of heat pumps, hot water tanks, and controllers - and 
 adapters for the co-simulation of these models using *mosaik*.
