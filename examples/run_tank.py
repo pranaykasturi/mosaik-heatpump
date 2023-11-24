@@ -19,8 +19,6 @@ SIM_CONFIG = {
 START = '01.01.2016 00:00'
 END = 7 * 15 * 60
 HWT_FLOW_DATA = './data/tank_data.csv'
-date_format = 'DD.MM.YYYY HH:mm'
-
 params = {
     'height': 2100,
     'diameter': 1200,
@@ -40,7 +38,7 @@ world = mosaik.World(SIM_CONFIG)
 # configure the simulators
 hwtsim = world.start('HotWaterTankSim', step_size=15*60, config=params)
 
-csv = world.start('CSV', sim_start=START, datafile=HWT_FLOW_DATA, date_format=date_format, delimiter=',')
+csv = world.start('CSV', sim_start=START, datafile=HWT_FLOW_DATA)
 
 init_vals = {
             'layers': {'T': [30, 50, 70]}

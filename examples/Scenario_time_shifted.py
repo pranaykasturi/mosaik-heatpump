@@ -95,10 +95,7 @@ for i in range(len(model_list)):
     hdf5 = db.Database(filename=HDF_File, buf_size=1440)
 
     heat_load_file = './data/scenario_data.csv'
-    heat_load_sim = world.start('CSV', sim_start=START,
-                                        datafile=heat_load_file,
-                                        date_format='DD.MM.YYYY hh:mm',
-                                        delimiter=',')
+    heat_load_sim = world.start('CSV', sim_start=START, datafile=heat_load_file)
     heat_load = heat_load_sim.HEATLOAD.create(1)
 
     params_hp['calc_mode'] = calc_mode_list[i]

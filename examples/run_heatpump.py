@@ -20,14 +20,13 @@ SIM_CONFIG = {
 START = '01.01.2016 00:00'
 END = 10 * 15 * 60  # 2.5 Hours or 150 mins
 HEAT_LOAD_DATA = './data/heatpump_data.csv'
-date_format = 'DD.MM.YYYY HH:mm'
 
 # Create World
 world = mosaik.World(SIM_CONFIG)
 
 # Start simulators
 heatpumpsim = world.start('HeatPumpSim', step_size=15*60)
-csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA, date_format=date_format)
+csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA)
 
 params = {'hp_model': 'Air_8kW',
           'heat_source': 'air',
