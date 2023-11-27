@@ -24,9 +24,9 @@ You can run the tests with:
 Getting started
 ---------------
 
-A description of the different models available in the package and examples to use individual models can be found here. 
+A description of the different models available in the package and examples to use individual models can be found :doc:`here <./models/index>`. 
 
-Example scenarios for the co-simulation of all the models can be found here.
+Example scenarios for the co-simulation of all the models can be found :doc:`here <./examples/index>`.
 
 Getting help
 ------------
