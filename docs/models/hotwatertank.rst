@@ -2,9 +2,11 @@
 Hot water tank
 ==============
 
-The hot water tank model developed for another project [18], is used in
+The hot water tank model developed for `another project <https://www.vde-
+verlag.de/proceedings-de/454308056.html>`_, is used in
 this work to act as a buffer in between the heating device and the heat
-consumer. It is a multinode stratified thermal tank model [19], where
+consumer. It is a `multinode stratified thermal tank model <https://doi.org/
+10.1016/j.apenergy.2019.02.075>`_, where
 the tank volume is divided into a specified number of layers (nodes) of
 equal volume, each characterized by a specific temperature. A
 traditional density distribution approach is adopted where the water
@@ -38,11 +40,11 @@ Figure .: Schematic representation of the hot water tank model (example
 with 6 layers)
 
 The heat transfer coefficient of the walls of the tank (*htc_walls*) is
-assumed to be 0.28 W/m\ :sup:`2`-K [7, page 117]. The heat transfer
+assumed to be 0.28 W/m\ :sup:`2`-K . The heat transfer
 coefficient for the heat transfer between the layers of the tank is
-assumed to be 1.5 times the thermal conductivity of water [7, page 82].
+assumed to be 1.5 times the thermal conductivity of water.
 The value is calculated as 0.897 W/m-K, considering the thermal
-conductivity of water to be 0.598 W/m-K [21]. However, these values can
+conductivity of water to be 0.598 W/m-K. However, these values can
 be changed by modifying the parameters dictionary of the hot water tank
 model.
 
@@ -68,17 +70,51 @@ updated.
 Example
 -------
 
-Code: ‘./examples/run_tank.py’
-
-Data: ‘./examples/data/tank_data.csv’
-
 An example scenario using the hot water tank simulator in the mosaik
-environment is available in the ‘run_tank.py’ file. The hot water tank
-model has one inlet connection and one outlet connection. The mass flow
-and temperature timeseries for these connections, that are needed as
-inputs for the model, are available in the ‘tank_data.csv’ file. The
-inputs are handled by ‘mosaik-csv’ and the output data is handled by
-‘mosaik-hdf5’ and saved into ‘hwt_trial_1.hdf5’ file.
+environment is available in the `'run_tank.py' <https://gitlab.com/mosaik/
+components/energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/
+examples/run_tank.py?ref_type=heads>`_ file.
+
+The simulation is configured as shown below. The inputs to the hot water tank
+model are handled by *‘mosaik-csv’* and the outputs are handled by *‘mosaik-hdf5’*.
+
+.. literalinclude:: ../code/examples/run_tank.py
+   :language: python
+   :lines: 7-22
+   :lineno-start: 7
+
+The hot water tank model has one inlet connection and one outlet connection. The
+required parameters and the initial values are set as shown below.
+
+.. literalinclude:: ../code/examples/run_tank.py
+   :language: python
+   :lines: 24-44
+   :lineno-start: 24
+   :emphasize-lines: 10-13
+
+The mass flow and temperature timeseries for these connections, that are needed as
+inputs for the model, are available in the `'tank_data.csv' <https://gitlab.com/mosaik
+/components/energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/examples/
+data/tank_data.csv?ref_type=heads>`_ file.
+
+.. literalinclude:: ../code/examples/run_tank.py
+   :language: python
+   :lines: 46-51
+   :lineno-start: 46
+
+The output data is saved into ‘hwt_trial_1.hdf5’ file.
+
+.. literalinclude:: ../code/examples/run_tank.py
+   :language: python
+   :lines: 53-57
+   :lineno-start: 53
+
+The different entities are then connected and the simulation is executed.
+
+.. literalinclude:: ../code/examples/run_tank.py
+   :language: python
+   :lines: 59-64
+   :lineno-start: 59
 
 .. |image1| image:: ../images/hwt_schematic.png
-	:alt: Schematic representation of the hot water tank model (example with 6 layers)
+   :alt: Schematic representation of the hot water tank model (example with 6 layers)
