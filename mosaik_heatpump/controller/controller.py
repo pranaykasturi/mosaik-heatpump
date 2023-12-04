@@ -1,6 +1,5 @@
-"""
+__doc__ = """
 The controller module contains a class for the controller model (:class:`Controller`).
-
 """
 
 class Controller():
