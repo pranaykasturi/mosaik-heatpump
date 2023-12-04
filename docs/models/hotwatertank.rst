@@ -116,5 +116,11 @@ The different entities are then connected and the simulation is executed.
    :lines: 59-64
    :lineno-start: 59
 
+Module Documentation
+--------------------
+
+.. automodule:: mosaik_heatpump.hotwatertanksim.hotwatertank
+   :members:
+
 .. |image1| image:: ../images/hwt_schematic.png
    :alt: Schematic representation of the hot water tank model (example with 6 layers)

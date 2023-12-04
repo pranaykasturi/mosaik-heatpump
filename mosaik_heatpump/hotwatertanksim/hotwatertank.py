@@ -2,11 +2,10 @@
 
 from datetime import datetime
 
-"""
+__doc__ = """
 The hotwatertank module contains classes for the components of the hotwatertank
 (:class:`Layer`, :class:`Connection`, :class:`Sensor`, :class:`HeatingRod`) 
 and a class for the hotwater tank itself (:class:`HotWaterTank`).
-
 """
 import jsonpickle
 import numpy as np
@@ -131,10 +130,6 @@ class HotWaterTank():
       of the uppermost layer, inbetween a linear temperature gradient is set,
       it is also possible to specify the temperature of each layer individually
       by passing a list of length n_layers
-
-    **Example**
-
-    .. literalinclude:: ../../examples/run_tank.py
 
     """
 
