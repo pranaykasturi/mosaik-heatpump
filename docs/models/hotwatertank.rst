@@ -34,10 +34,12 @@ top layer respectively. As described above, the flows coming into the
 tank are not connected to a fixed layer in the tank. They are connected
 to the layer with a temperature closest to that of the flow.
 
-|image1|
+.. figure:: ../images/hwt_schematic.png
+   :alt: Schematic representation of the hot water tank model (example with 6 layers)
+   :align: center
+   :scale: 65
 
-Figure .: Schematic representation of the hot water tank model (example
-with 6 layers)
+   Schematic representation of the hot water tank model (example with 6 layers)
 
 The heat transfer coefficient of the walls of the tank (*htc_walls*) is
 assumed to be 0.28 W/m\ :sup:`2`-K . The heat transfer
@@ -122,5 +124,3 @@ Module Documentation
 .. automodule:: mosaik_heatpump.hotwatertanksim.hotwatertank
    :members:
 
-.. |image1| image:: ../images/hwt_schematic.png
-   :alt: Schematic representation of the hot water tank model (example with 6 layers)
