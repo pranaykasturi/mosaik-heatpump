@@ -41,10 +41,10 @@ python311_scenarios:
     image: python:3.11.4-slim-buster
     script:
         -   python -m pip install --quiet --upgrade -r requirements.txt
-        -   python examples/run_heatpump.py
-        -   python examples/run_tank.py
-        -   python examples/Scenario_same_time_loop.py
-        -   python examples/Scenario_time_shifted.py
+        -   python docs/code/examples/run_heatpump.py
+        -   python docs/code/examples/run_tank.py
+        -   python docs/code/examples/Scenario_same_time_loop.py
+        -   python docs/code/examples/Scenario_time_shifted.py
     stage: test
 
 
