@@ -1,8 +1,6 @@
 import mosaik.util
 import sys
 import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Sim config. and other parameters
 SIM_CONFIG = {
@@ -19,7 +17,7 @@ SIM_CONFIG = {
 
 START = '01.01.2016 00:00'
 END = 10 * 15 * 60  # 2.5 Hours or 150 mins
-HEAT_LOAD_DATA = './data/heatpump_data.csv'
+HEAT_LOAD_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','heatpump_data.csv')
 
 # Create World
 world = mosaik.World(SIM_CONFIG)
