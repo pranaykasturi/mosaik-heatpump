@@ -82,17 +82,17 @@ model are handled by *‘mosaik-csv’* and the outputs are handled by *‘mosai
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
-   :lines: 7-22
-   :lineno-start: 7
+   :lines: 5-20
+   :lineno-start: 5
 
-The hot water tank model has one inlet connection and one outlet connection. The
-required parameters and the initial values are set as shown below.
+The hot water tank model has one inlet connection (*'cc_in'*) and one outlet
+connection (*'cc_out'*). The required parameters and the initial values are set
+as shown below.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
-   :lines: 24-44
-   :lineno-start: 24
-   :emphasize-lines: 10-13
+   :lines: 22-42
+   :lineno-start: 22
 
 The mass flow and temperature timeseries for these connections, that are needed as
 inputs for the model, are available in the `'tank_data.csv' <https://gitlab.com/mosaik
@@ -101,22 +101,22 @@ data/tank_data.csv?ref_type=heads>`_ file.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
-   :lines: 46-51
-   :lineno-start: 46
+   :lines: 44-49
+   :lineno-start: 44
 
 The output data is saved into ‘hwt_trial_1.hdf5’ file.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
-   :lines: 53-57
-   :lineno-start: 53
+   :lines: 51-55
+   :lineno-start: 51
 
 The different entities are then connected and the simulation is executed.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
-   :lines: 59-64
-   :lineno-start: 59
+   :lines: 57-62
+   :lineno-start: 57
 
 Module Documentation
 --------------------

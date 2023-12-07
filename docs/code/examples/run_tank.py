@@ -1,8 +1,6 @@
 import mosaik
 import sys
 import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 SIM_CONFIG = {
     'HotWaterTankSim': {
@@ -44,7 +42,7 @@ hwtsim = world.start('HotWaterTankSim', step_size=15*60, config=params)
 hwt = hwtsim.HotWaterTank(params=params, init_vals=init_vals)
 
 # Input data csv
-HWT_FLOW_DATA = './data/tank_data.csv'
+HWT_FLOW_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'tank_data.csv')
 # configure the simulator
 csv = world.start('CSV', sim_start=START, datafile=HWT_FLOW_DATA)
 # Instantiate model
