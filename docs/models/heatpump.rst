@@ -199,16 +199,16 @@ model are handled by *‘mosaik-csv’* and the outputs are handled by *‘mosai
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 7-23
-   :lineno-start: 7
+   :lines: 4-20
+   :lineno-start: 4
 
 The **tespy** model is used in the *'fast'* calculation mode. The *'Air_8kW'* heat pump is chosen. The
 required parameters are set as shown below.
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 25-33
-   :lineno-start: 25
+   :lines: 22-30
+   :lineno-start: 22
 
 The timeseries of heat demand, heat source temperature, and the condenser water inlet
 temperature, that are needed as inputs for the model, are available in the `'heatpump_
@@ -217,22 +217,22 @@ improve-documentation/docs/code/examples/data/heatpump_data.csv?ref_type=heads>`
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 35-40
-   :lineno-start: 35
+   :lines: 32-47
+   :lineno-start: 32
 
 The output data is saved into ‘hp_trial_1.hdf5’ file.
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 42-46
-   :lineno-start: 42
+   :lines: 39-43
+   :lineno-start: 39
 
 The different entities are then connected and the simulation is executed.
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 48-54
-   :lineno-start: 48
+   :lines: 45-51
+   :lineno-start: 45
 
 Module Documentation
 --------------------

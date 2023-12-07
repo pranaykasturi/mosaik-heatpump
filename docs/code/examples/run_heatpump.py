@@ -1,8 +1,5 @@
 import mosaik.util
-import sys
 import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 SIM_CONFIG = {
     'HeatPumpSim': {
@@ -33,7 +30,7 @@ heatpumpsim = world.start('HeatPumpSim', step_size=15*60)
 heatpump = heatpumpsim.HeatPump(params=params)
 
 # Input data csv
-HEAT_LOAD_DATA = './data/heatpump_data.csv'
+HEAT_LOAD_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'heatpump_data.csv')
 # configure the simulator
 csv = world.start('CSV', sim_start=START, datafile=HEAT_LOAD_DATA)
 # Instantiate model
