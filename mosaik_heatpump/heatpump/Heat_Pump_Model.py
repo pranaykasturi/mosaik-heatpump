@@ -1,4 +1,4 @@
-"""
+__doc__ = """
 This module contains a simulation model of a Heat Pump based on the library TESPy.
 """
 
@@ -62,7 +62,7 @@ class Heat_Pump_Inputs():
 
 class Heat_Pump():
     """
-    Simulation model of a heat pump based on the libraries TESPy and hplib.
+    Simulation model of a heat pump based on the libraries **TESPy** and **hplib**.
 
     Heat pump parameters are provided at instantiation by the dictionary **params**. The following dictionary contains
     the parameters that are mandatory::
@@ -75,13 +75,15 @@ class Heat_Pump():
 
     Explanation of the entries in the dictionary:
 
-    * **calc_mode**: The calculation mode that is used by the heat pump model. Currently, 'detailed', 'fast', 'hplib',
-    and 'fixed' calculation modes are available. The differences are explained in the documentation.
+    * **calc_mode**: The calculation mode that is used by the heat pump model. Currently, *'detailed'*, *'fast'*,
+      *'hplib'*, and *'fixed'* calculation modes are available. The differences are explained in the documentation.
     * **hp_model**: The specific model of the heat pump that must be simulated. The different models available currently
-    can be found in the documentation. This need not be specified for the 'fixed' calculation mode.
-    * **heat_source**: The fluid that acts as the source of heat for the heat pump, either 'water' or 'air'
+      can be found in the documentation. This need not be specified for the *'fixed'* calculation mode.
+    * **heat_source**: The fluid that acts as the source of heat for the heat pump, either *'water'* or *'air'*
 
-    If the 'hplib' calculation mode is chosen, the following parameter is required in addition to the mandatory ones::
+    If the **'hplib'** calculation mode is chosen, the following parameter is required in addition to the mandatory
+    ones::
+
         {
             'equivalent_hp_model': 'Air_30kW',
         }
@@ -89,13 +91,14 @@ class Heat_Pump():
     * **equivalent_hp_model**: The heat pump model from the saved data file whose limits of operation will be applied
 
     Alternatively, the limits can be directly specified in the following parameter::
+
         {
             'hp_limits': { 'heat_source_T_min': -10, 'heat_source_T_max': 35, 'cons_T_min': 25, 'cons_T_max': 55,
                            'heatload_min': 15000 }
         }
 
-    For the 'hplib' calculation mode if the 'Generic' heat pump model is chosen, the following parameters are required
-    in addition to the mandatory ones::
+    For the **'hplib'** calculation mode if the *'Generic'* heat pump model is chosen, the following parameters are
+    required in addition to the mandatory ones::
 
         {
             'cons_T': 35,
@@ -107,7 +110,8 @@ class Heat_Pump():
     * **heat_source_T**: The temperature at which the fluid (water or air) is available as the heat source (in °C).
     * **P_th**: The heating capacity of the heat pump (in W).
 
-    If the 'fixed' calculation mode is chosen, the following parameters are required in addition to the mandatory ones::
+    If the *'fixed'* calculation mode is chosen, the following parameters are required in addition to the mandatory
+    ones::
 
         {
             'COP': 3.5,
@@ -119,9 +123,6 @@ class Heat_Pump():
     * **heating_capacity**: The heating capacity of the heat pump (in W).
     * **cond_m**: The mass flow rate of water in the condenser (in kg/s).
 
-    **Example**
-
-    .. literalinclude:: ../../examples/run_tank.py
     """
 
     __slots__ = ['design', 'state', 'inputs']
