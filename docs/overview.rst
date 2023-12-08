@@ -26,7 +26,7 @@ Getting started
 
 A description of the different models available in the package and examples to use individual models can be found :doc:`here <./models/index>`. 
 
-Example scenarios for the co-simulation of all the models can be found :doc:`here <./examples/index>`.
+Example scenarios for the co-simulation of all the models can be found :doc:`here <./example_scenarios>`.
 
 Getting help
 ------------
