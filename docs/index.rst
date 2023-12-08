@@ -12,5 +12,5 @@ mosaik-heatpump
    
    overview
    models/index
-   examples_scenarios
+   example_scenarios
    advanced/index

@@ -42,14 +42,14 @@ and controlling the operation of the heat pump.
 The simulation is configured as shown below. The inputs to the models
 are handled by *‘mosaik-csv’* and the outputs are handled by *‘mosaik-hdf5’*.
 
-.. literalinclude:: ../code/examples/scenario_time_shifted.py
+.. literalinclude:: ./code/examples/scenario_time_shifted.py
    :language: python
    :lines: 5-26
    :lineno-start: 5
 
 The parameters and/or initial values for the different models are specified.
 
-.. literalinclude:: ../code/examples/scenario_time_shifted.py
+.. literalinclude:: ./code/examples/scenario_time_shifted.py
    :language: python
    :lines: 28-67
    :lineno-start: 28
@@ -57,7 +57,7 @@ The parameters and/or initial values for the different models are specified.
 The different types of heat pumps and calculation modes that are simulated are
 specified.
 
-.. literalinclude:: ../code/examples/scenario_time_shifted.py
+.. literalinclude:: ./code/examples/scenario_time_shifted.py
    :language: python
    :lines: 69-72
    :lineno-start: 28
@@ -72,7 +72,7 @@ from the tank (*dhw_in_T*) – are available in the `‘scenario_data.csv’ <ht
 data/scenario_data.csv?ref_type=heads>`_ file. The inputs are handled by *‘mosaik-csv’*
 and the output data is handled by *‘mosaik-hdf5’* and saved in hdf5 files.
 
-.. literalinclude:: ../code/examples/scenario_time_shifted.py
+.. literalinclude:: ./code/examples/scenario_time_shifted.py
    :language: python
    :lines: 78-92
    :lineno-start: 78
@@ -80,14 +80,14 @@ and the output data is handled by *‘mosaik-hdf5’* and saved in hdf5 files.
 The specific parameters for the different heat pump models and calculation modes are added to the
 parameters.
 
-.. literalinclude:: ../code/examples/scenario_time_shifted.py
+.. literalinclude:: ./code/examples/scenario_time_shifted.py
    :language: python
    :lines: 94-102
    :lineno-start: 94
 
 The different models are instantiated.
 
-.. literalinclude:: ../code/examples/scenario_time_shifted.py
+.. literalinclude:: ./code/examples/scenario_time_shifted.py
    :language: python
    :lines: 104-113
    :lineno-start: 104
@@ -95,7 +95,7 @@ The different models are instantiated.
 The cyclic data flows between the different models are then set up in the time-shifted manner
 and the simulation is executed.
 
-.. literalinclude:: ../code/examples/scenario_time_shifted.py
+.. literalinclude:: ./code/examples/scenario_time_shifted.py
    :language: python
    :lines: 115-156
    :lineno-start: 115
@@ -113,14 +113,14 @@ when compared to the *time-based* resolution are shown below.
 While initializing the model simulators, the *'same_time_loop'* parameter has to be set to
 *'True'* for all the models.
 
-.. literalinclude:: ../code/examples/scenario_same_time_loop.py
+.. literalinclude:: ./code/examples/scenario_same_time_loop.py
    :language: python
    :lines: 82-86
    :lineno-start: 82
 
 The cyclic data flows between the different models are then set up in the same-time-loop manner.
 
-.. literalinclude:: ../code/examples/scenario_same_time_loop.py
+.. literalinclude:: ./code/examples/scenario_same_time_loop.py
    :language: python
    :lines: 115-144
    :lineno-start: 82
@@ -129,7 +129,7 @@ For the same-time-loop execution, it is important to set the initial event that 
 simulation, which is the simulation of the hot water tank for this scenario. The simulation is
 then executed.
 
-.. literalinclude:: ../code/examples/scenario_same_time_loop.py
+.. literalinclude:: ./code/examples/scenario_same_time_loop.py
    :language: python
    :lines: 146-150
    :lineno-start: 146
