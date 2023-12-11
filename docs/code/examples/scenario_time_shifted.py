@@ -21,7 +21,7 @@ sim_config = {
 }
 
 # The start date, duration, and step size for the simulation
-END = 3 * 60 * 60
+END = 10 * 60
 START = '01.01.2020 00:00'
 STEP_SIZE = 60 * 1
 

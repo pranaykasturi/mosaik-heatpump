@@ -44,8 +44,8 @@ python311_scenarios:
         -   python -m pip install .
         -   python docs/code/examples/run_heatpump.py
         -   python docs/code/examples/run_tank.py
-        -   python docs/code/examples/Scenario_same_time_loop.py
-        -   python docs/code/examples/Scenario_time_shifted.py
+        -   python docs/code/examples/scenario_same_time_loop.py
+        -   python docs/code/examples/scenario_time_shifted.py
     stage: test
 
 
