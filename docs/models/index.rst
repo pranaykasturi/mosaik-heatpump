@@ -1,6 +1,7 @@
-Models available in the package
-===============================
+Models
+======
 
+The package contains the models for the following components of the heating system:
 
 .. toctree::
    :maxdepth: 1

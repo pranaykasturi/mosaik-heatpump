@@ -1,5 +1,5 @@
-Example Co-simulation Scenarios
-=================================
+Example scenarios
+=================
 
 Example scenarios of the co-simulation of the heat pump, hot water tank
 and controller models are available in the `examples <https://gitlab.com/mosaik/
@@ -27,8 +27,8 @@ resolution. For the *same-time-loop* resolution, the parameter
 execution, the way the connections between the different models are
 setup varies, and can be seen in the example scenarios below.
 
-Time-shifted resolution of cyclic dependencies
-----------------------------------------------
+Time-shifted resolution
+----------------------
 
 The  `first example scenario <https://gitlab.com/mosaik/
 components/energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/
@@ -101,8 +101,8 @@ and the simulation is executed.
    :lineno-start: 115
 
 
-Same-time-loop resolution of cyclic dependencies
-------------------------------------------------
+Same-time-loop resolution
+-------------------------
 
 The `second example scenario <https://gitlab.com/mosaik/
 components/energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/examples
@@ -135,9 +135,12 @@ then executed.
    :lineno-start: 146
 
 
-Postprocessing of the results
------------------------------
+Postprocessing
+--------------
 
+Postprocessing of the hdf5 result files from the simulation.
 
-Plotting the results
---------------------
+Plotting
+--------
+
+Plotting the results of the simulation.

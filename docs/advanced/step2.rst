@@ -1,4 +1,4 @@
 
-Generating the compressor efficiency map
-===========================================
+Compressor efficiency map
+==========================
 
