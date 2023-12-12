@@ -41,6 +41,7 @@ This data has been used to set the parameters of the corresponding components
 and connections as described in the tutorial. Since the refrigerant R448A is
 not available in TESPy, R404A has been used due to the similarity in their
 properties (`reference <https://doi.org/10.1016/j.enconman.2015.08.034>`_).
+
 TESPy uses the isentropic efficiency of the compressor to calculate the power
 consumption as shown in equation below.
 
@@ -49,7 +50,23 @@ consumption as shown in equation below.
    :align: center
    :scale: 50
 
-Since the isentropic efficiency of the compressor is not available in the
+Since the isentropic efficiency of the compressor (*'eta_s'*) is not available in the
 datasheet, the value has been changed on a trial-and-error basis to
 match the power consumption calculated by the model to that mentioned in
 the datasheet.
+
+.. literalinclude:: ../code/scripts/Compressor_Parametrization/Parametrization_NominalData.py
+   :language: python
+   :lines: 128-131
+   :lineno-start: 128
+
+.. note::
+
+   For heat pumps having two stages of compression, like the one in this example, in addition
+   to the isentropic efficiency, the pressure ratio (*'pr'*) for the second stage is also a
+   required parameter.
+
+   This has to be adjusted on a trial and error basis as well, so that it works for
+   the different range of operating conditions of the heat pump. This could be checked, by choosing
+   data points from the edges of the operation range, and following the same procedure as done for
+   nominal operating point data.
