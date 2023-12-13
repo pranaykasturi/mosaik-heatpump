@@ -15,7 +15,6 @@ steps below:
 
 .. toctree::
    :maxdepth: 1
-   :numbered:
 
    step1
    step2
