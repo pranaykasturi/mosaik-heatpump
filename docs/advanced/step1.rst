@@ -6,7 +6,7 @@ The `tutorial <https://tespy.readthedocs.io/en/main/tutorials/heat_pump_steps.ht
 provided in TESPy’s documentation for simulating heat pumps
 has been followed to develop the first design calculation, available in
 the `‘Parametrization_NominalData.py’ <https://gitlab.com/mosaik/components/energy/
-mosaik-heatpump/-/blob/10-improve-documentation/docs/code/scripts/Compressor%20Param
+mosaik-heatpump/-/blob/10-improve-documentation/docs/code/scripts/Compressor_Param
 etrization/Parametrization_NominalData.py?ref_type=heads>`_ file. While the tutorial
 provides a detailed explanation of the complete parametrization of the model, only
 the most relevant parameters are discussed here.

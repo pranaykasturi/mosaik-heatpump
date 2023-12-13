@@ -149,6 +149,8 @@ the real COP/power consumption.
 For the series of design points identified, the calculated heating
 capacity and power consumption data is summarized in the table below.
 
+.. _expanded_heating_capacity_table:
+
 .. figure:: ../images/advanced_8.png
    :alt: Expanded heating capacity table of the heat pump
    :align: center
@@ -162,14 +164,14 @@ rove-documentation/docs/code/scripts/Compressor%20Parametrization/Data/Hea
 t_Load_Data.csv?ref_type=heads>`_  file and the power consumption data has
 to be saved in the `‘PI_Data.csv’ <https://gitlab.com/mosaik/components/
 energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/scripts/
-Compressor%20Parametrization/Data/PI_Data.csv?ref_type=heads>`_ file.
+Compressor_Parametrization/Data/PI_Data.csv?ref_type=heads>`_ file.
 
 Generating the compressor efficiency map
 ----------------------------------------
 
 The tutorial available in the `‘script_etas_gen.ipynb’ <https://gitlab.com/
 mosaik/components/energy/mosaik-heatpump/-/blob/10-improve-documentation
-/docs/code/scripts/Compressor%20Parametrization/script_etas_gen.ipynb?ref_
+/docs/code/scripts/Compressor_Parametrization/script_etas_gen.ipynb?ref_
 type=heads>`_ is followed to generate the compressor efficiency map. The
 model is parametrized for each of the design point in the expanded heating
 capacity table from the previous step, as done for the initial parametrization
@@ -182,6 +184,8 @@ In the instances when the power values cannot be matched even at the
 extreme values, they are assumed despite the difference in power
 predicted by the model and that in the table. The compressor isentropic
 efficiency map generated as described is summarized in table below.
+
+.. _compressor_efficiency_table:
 
 .. figure:: ../images/advanced_9.png
    :alt: Compressor isentropic efficiency map
