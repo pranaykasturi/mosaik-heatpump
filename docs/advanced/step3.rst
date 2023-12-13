@@ -2,7 +2,7 @@
 *'fast'* mode data
 ==================
 
-Detailed calculation mode of the model for the simulations
+*'detailed'* calculation mode of the model for the simulations
 ----------------------------------------------------------
 
 After establishing the series of design points, the model is then developed
@@ -47,8 +47,8 @@ condenser and the power consumption of the heat pump.
 
    Example of detailed calculation mode
 
-Fast calculation mode of the model
-----------------------------------
+*'fast'* calculation mode of the model
+--------------------------------------
 
 In addition to the detailed mode of calculation explained above, a fast
 calculation mode has also been implemented in the model to improve its
@@ -75,8 +75,8 @@ duration.
    Flowchart explaining the fast calculation mode of the TESPy heat pump
    model
 
-Generation of fast mode data
------------------------------
+Generation of *'fast'* mode data
+--------------------------------
 
 The data for the *'fast'* calculation mode can be calculated and saved as
 follows:
@@ -93,14 +93,14 @@ follows:
    -documentation/mosaik_heatpump/heatpump/Heat_Pump_Design.py?ref_type=heads>`_
    file (lines 212-232).
 
-2. **Fast calculation mode data generation**
+2. **'fast' calculation mode data generation**
 
    The tutorial in the `‘Fast_Calculation_Mode.ipynb’ <https://gitlab.com/
    mosaik/components/energy/mosaik-heatpump/-/blob/10-improve-documentation
    /docs/code/scripts/Fast_Calculation_Mode/Fast_Calculation_Mode.ipynb?ref_
    type=heads>`_, should be followed to generate the fast mode data.
 
-3. **Fast calculation mode data processing**
+3. **'fast' calculation mode data processing**
 
    The tutorial in the `‘Fast_Mode_DataProcessing.ipynb’ <https://gitlab.com/
    mosaik/components/energy/mosaik-heatpump/-/blob/10-improve-documentation
