@@ -28,7 +28,7 @@ execution, the way the connections between the different models are
 setup varies, and can be seen in the example scenarios below.
 
 Time-shifted resolution
-----------------------
+-----------------------
 
 The  `first example scenario <https://gitlab.com/mosaik/
 components/energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/

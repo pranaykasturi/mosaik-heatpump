@@ -3,7 +3,7 @@
 ==================
 
 *'detailed'* calculation mode of the model for the simulations
-----------------------------------------------------------
+--------------------------------------------------------------
 
 After establishing the series of design points, the model is then developed
 to estimate the performance of the heat pump at any operating
