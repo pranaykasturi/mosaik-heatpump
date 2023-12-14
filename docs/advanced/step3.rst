@@ -112,5 +112,5 @@ follows:
 Module Documentation
 --------------------
 
-.. automodule:: mosaik_heatpump.heatpump.Heat_Pump_Model
+.. automodule:: mosaik_heatpump.heatpump.Heat_Pump_Design
    :members:
