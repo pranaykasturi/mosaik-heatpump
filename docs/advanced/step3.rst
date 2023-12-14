@@ -107,3 +107,10 @@ follows:
    /docs/code/scripts/Fast_Calculation_Mode/Fast_Mode_DataProcessing.ipynb?ref_
    type=heads>`_ script should be used to process the fast mode data, to fill
    the missing values in the data that result from the errors in the model etc.
+
+
+Module Documentation
+--------------------
+
+.. automodule:: mosaik_heatpump.heatpump.Heat_Pump_Model
+   :members:
