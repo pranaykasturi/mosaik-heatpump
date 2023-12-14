@@ -15,8 +15,15 @@ steps below:
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    step1
    step2
    step3
+
+**Step 1**: :doc:`Initial Parametrization <./step1>`
+
+**Step 2**: :doc:`Compressor efficiency map <./step2>`
+
+**Step 3**: :doc:`'fast' mode data <./step3>`
 
