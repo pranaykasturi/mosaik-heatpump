@@ -88,7 +88,7 @@ for i in range(len(model_list)):
     heat_load_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'scenario_data.csv')
     heat_load_sim = world.start('CSV', sim_start=START, datafile=heat_load_file)
 
-    HDF_File = 'Scenario_' + filename_list[i] + '_same_time_loop_1.hdf5'
+    HDF_File = 'Scenario_' + filename_list[i] + '_same_time_loop.hdf5'
     db = world.start('DB', step_size=STEP_SIZE, duration=END)
 
     params_hp['calc_mode'] = calc_mode_list[i]
