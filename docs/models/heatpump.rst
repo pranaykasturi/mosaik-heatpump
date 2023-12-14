@@ -22,6 +22,9 @@ operating conditions. The model based on TESPy, hereafter referred as
 the fluids in the different components of the heat pump. Therefore, it
 offers greater flexibility than the *hplib* model in estimating the
 performance of the heat pump at different operating conditions.
+However, as a result of this increased complexity, the simulation
+time for the detailed calculations in *tespy* model is higher as compared
+to that of the simpler calculations in *hplib* model.
 
 *hplib* model
 -------------
@@ -90,8 +93,9 @@ The *tespy* model is based on TESPy (“Thermal Engineering Systems in
 Python”), an open-source Python library that provides a powerful
 simulation package for thermal processes like power plants, district
 heating systems, heat pumps etc. An initial version of this model has
-been used in a previous work[16], and significant changes have been made
-for this study. The performance of the heat pump is simulated by
+been used in a `previous work <https://doi.org/10.1186/s42162-021-00180-6>`_,
+and significant changes have been made for this study.
+The performance of the heat pump is simulated by
 considering the energy and mass balances in the individual
 “\ *components*\ ” of the heat pump – condenser, evaporator, compressor,
 expansion valve, heat exchangers and pumps – and the state of fluids in
