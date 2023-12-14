@@ -15,7 +15,9 @@ import json
 JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'eta_s_data.json'))
 
 class Heat_Pump_Design():
-
+    """
+    Design of the heat pump model for the different the different calculation modes
+    """
     def __init__(self, params, COP_m_data=None):
 
         # Parameters required for all models
@@ -108,7 +110,7 @@ class Heat_Pump_Design():
         * Used for all the calculation modes except 'fixed' mode.
         * Uses the pre-saved data from the "eta_s_data.json" file
         * Checks the inputs, **cond_in_T** and **heat_source_T**, against the limits of operation for the chosen heat
-        pump model.
+          pump model.
         * Identifies the closest design point for the inputs, for the 'detailed' calculation mode
         """
 

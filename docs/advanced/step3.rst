@@ -114,3 +114,4 @@ Module Documentation
 
 .. automodule:: mosaik_heatpump.heatpump.Heat_Pump_Design
    :members:
+   :private-members:
