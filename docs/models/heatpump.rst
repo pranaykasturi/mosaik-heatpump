@@ -199,7 +199,7 @@ components/energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/
 examples/run_heatpump.py?ref_type=heads>`_ file.
 
 The simulation is configured as shown below. The inputs to the heat pump
-model are handled by *‘mosaik-csv’* and the outputs are handled by *‘mosaik-hdf5’*.
+model and the outputs from it are handled by *‘mosaik-csv’* .
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
@@ -221,22 +221,22 @@ improve-documentation/docs/code/examples/data/heatpump_data.csv?ref_type=heads>`
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 32-47
+   :lines: 32-37
    :lineno-start: 32
 
-The output data is saved into ‘hp_trial_1.hdf5’ file.
+The output data is saved into ‘hp_trial.csv’ file.
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 39-43
+   :lines: 39-44
    :lineno-start: 39
 
 The different entities are then connected and the simulation is executed.
 
 .. literalinclude:: ../code/examples/run_heatpump.py
    :language: python
-   :lines: 45-51
-   :lineno-start: 45
+   :lines: 46-52
+   :lineno-start: 46
 
 Module Documentation
 --------------------

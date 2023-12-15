@@ -6,8 +6,8 @@ sim_config = {
     'CSV': {
         'python': 'mosaik_csv:CSV',
     },
-    'DB': {
-        'python': 'mosaik_hdf5:MosaikHdf5'
+    'CSV_writer': {
+        'python': 'mosaik_csv_writer:CSVWriter'
     },
     'HeatPumpSim': {
         'python': 'mosaik_heatpump.heatpump.Heat_Pump_mosaik:HeatPumpSimulator',
@@ -88,8 +88,9 @@ for i in range(len(model_list)):
     heat_load_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'scenario_data.csv')
     heat_load_sim = world.start('CSV', sim_start=START, datafile=heat_load_file)
 
-    HDF_File = 'Scenario_' + filename_list[i] + '_same_time_loop.hdf5'
-    db = world.start('DB', step_size=STEP_SIZE, duration=END)
+    CSV_File = 'Scenario_' + filename_list[i] + '_same_time_loop.csv'
+    csv_sim_writer = world.start('CSV_writer', start_date='01.01.2020 00:00', date_format='%d.%m.%Y %H:%M',
+                                 output_file=CSV_File)
 
     params_hp['calc_mode'] = calc_mode_list[i]
     params_hp['hp_model'] = model_list[i]
@@ -110,7 +111,7 @@ for i in range(len(model_list)):
 
     heat_load = heat_load_sim.HEATLOAD.create(1)
 
-    hdf5 = db.Database(filename=HDF_File, buf_size=1440)
+    csv_writer = csv_sim_writer.CSVWriter(buff_size=60 * 60)
 
     # connections between the different models
     world.connect(heat_load[0], ctrls[0], ('T_amb', 'T_amb'), ('T_amb', 'heat_source_T'), ('SH Demand [kW]', 'sh_demand'),
@@ -132,14 +133,14 @@ for i in range(len(model_list)):
                   ('T_amb', 'T_amb'), ('heat_source_T', 'heat_source_T'))
 
 
-    world.connect(heat_load[0], hdf5, 'T_amb', 'SH Demand [kW]', 'DHW Demand [L]')
-    world.connect(heatpumps[0], hdf5, 'Q_Demand', 'Q_Supplied', 'T_amb', 'heat_source_T', 'cons_T', 'P_Required',
+    world.connect(heat_load[0], csv_writer, 'T_amb', 'SH Demand [kW]', 'DHW Demand [L]')
+    world.connect(heatpumps[0], csv_writer, 'Q_Demand', 'Q_Supplied', 'T_amb', 'heat_source_T', 'cons_T', 'P_Required',
                   'COP', 'cond_m', 'cond_in_T', 'on_fraction')
 
-    world.connect(ctrls[0], hdf5, 'heat_demand', 'heat_supply', 'hp_demand', 'sh_supply', 'sh_demand', 'hp_supply',
+    world.connect(ctrls[0], csv_writer, 'heat_demand', 'heat_supply', 'hp_demand', 'sh_supply', 'sh_demand', 'hp_supply',
                   'sh_in_F', 'sh_in_T', 'sh_out_F', 'sh_out_T','dhw_in_F', 'dhw_in_T', 'dhw_out_F', 'dhw_out_T',
                   'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T',  'P_hr_sh', 'P_hr_dhw', 'dhw_demand', 'dhw_supply')
-    world.connect(hwts[0], hdf5, 'sensor_00.T', 'sensor_01.T', 'sensor_02.T','sensor_03.T', 'sensor_04.T', 'sensor_05.T',
+    world.connect(hwts[0], csv_writer, 'sensor_00.T', 'sensor_01.T', 'sensor_02.T','sensor_03.T', 'sensor_04.T', 'sensor_05.T',
                   'sh_out.T', 'sh_out.F', 'dhw_out.T', 'dhw_out.F', 'hp_in.T', 'hp_in.F', 'hp_out.T', 'hp_out.F',
                   'T_mean', 'sh_in.T', 'sh_in.F', 'dhw_in.T', 'dhw_in.F')
 

@@ -78,7 +78,7 @@ components/energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/
 examples/run_tank.py?ref_type=heads>`_ file.
 
 The simulation is configured as shown below. The inputs to the hot water tank
-model are handled by *‘mosaik-csv’* and the outputs are handled by *‘mosaik-hdf5’*.
+model and the outputs from it are handled by *‘mosaik-csv’*.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
@@ -108,15 +108,15 @@ The output data is saved into ‘hwt_trial_1.hdf5’ file.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
-   :lines: 51-55
+   :lines: 51-56
    :lineno-start: 51
 
 The different entities are then connected and the simulation is executed.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
-   :lines: 57-62
-   :lineno-start: 57
+   :lines: 58-63
+   :lineno-start: 58
 
 Module Documentation
 --------------------

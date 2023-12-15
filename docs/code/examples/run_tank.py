@@ -9,8 +9,8 @@ SIM_CONFIG = {
     'CSV': {
         'python': 'mosaik_csv:CSV',
     },
-    'DB': {
-        'python': 'mosaik_hdf5:MosaikHdf5'
+    'CSV_writer': {
+        'python': 'mosaik_csv_writer:CSVWriter'
     },
 }
 
@@ -50,13 +50,14 @@ csv_data = csv.HWT()
 
 # Output data storage
 # configure the simulator
-db = world.start('DB', step_size=15*60, duration=END)
+csv_sim_writer = world.start('CSV_writer', start_date='01.01.2020 00:00', date_format='%d.%m.%Y %H:%M',
+                             output_file='hwt_trial.csv')
 # Instantiate model
-hdf5 = db.Database(filename='hwt_trial_1.hdf5')
+csv_writer = csv_sim_writer.CSVWriter(buff_size=60 * 60)
 
 # Connect entities
 world.connect(csv_data, hwt, ('T_in', 'cc_in.T'), ('F_in', 'cc_in.F'), ('F_out', 'cc_out.F'))
-world.connect(hwt, hdf5, 'cc_in.T', 'cc_in.F', 'cc_out.T', 'cc_out.F', 'sensor_00.T', 'sensor_01.T', 'sensor_02.T')
+world.connect(hwt, csv_writer, 'cc_in.T', 'cc_in.F', 'cc_out.T', 'cc_out.F', 'sensor_00.T', 'sensor_01.T', 'sensor_02.T')
 
 # Run the simulation
 world.run(until=END)  # As fast as possilbe
