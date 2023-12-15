@@ -55,6 +55,6 @@ section after the publication.
 
 .. rubric:: License
 
-The package is completely open source and is covered under the `MIT License. <
-https://gitlab.com/mosaik/components/energy/mosaik-heatpump/-/blob/10-improve-
-documentation/LICENSE?ref_type=heads>`_
+The package is completely open source and is covered under the `MIT License. <https://gitlab.com/mosaik/
+components/energy/mosaik-heatpump/-/blob/10-improve-documentation/LICENSE?ref_type=heads>`_
+
