@@ -31,7 +31,7 @@ below, is used.
    :alt: Default characteristic curve for the isentropic efficiency of
          the compressor in TESPy library
    :align: center
-   :scale: 65
+   :scale: 75
 
    Default characteristic curve for the isentropic efficiency of the
    compressor in TESPy library
@@ -55,7 +55,7 @@ operating conditions shown in table 3.3.
    +-----------------------------+---------------------------------------------+
    | Source air                  | -20, -15, -12, -10, -7, -2, 2, 7, 10, 12,   |
    | temperatures (:sup:`0`\ C)  | 15, 20, 25, 30, 35                          |
-   +=============================+=============================================+
+   +-----------------------------+---------------------------------------------+
    | Condenser outlet            | 15, 20, 25, 30, 35, 40, 45, 50, 55          |
    | temperatures (:sup:`0`\ C)  |                                             |
    +-----------------------------+---------------------------------------------+
@@ -78,7 +78,7 @@ electrical power curves as shown in figure below.
    :alt: Heating capacity, electrical power, and COP curves of the chosen
          heat pump
    :align: center
-   :scale: 65
+   :scale: 40
 
    Heating capacity, electrical power, and COP curves of the chosen
    heat pump
@@ -103,7 +103,7 @@ COP is calculated for all the operating points, using the equation below.
 .. figure:: ../images/advanced_4.png
    :alt: Equation for ideal COP
    :align: center
-   :scale: 65
+   :scale: 60
 
    Equation for ideal COP
 
@@ -113,7 +113,7 @@ Carnot efficiency has been calculated using the following equation.
 .. figure:: ../images/advanced_5.png
    :alt: Equation for Carnot efficiency
    :align: center
-   :scale: 65
+   :scale: 60
 
    Equation for Carnot efficiency
 
@@ -123,7 +123,7 @@ equation below
 .. figure:: ../images/advanced_6.png
    :alt: Equation for temperature lift
    :align: center
-   :scale: 65
+   :scale: 60
 
    Equation for temperature lift
 
