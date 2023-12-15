@@ -23,9 +23,9 @@ mode.
 
 In order to determine the electrical power consumption, the isentropic
 efficiency of the compressor is required. Since this is not available in
-the datasheets for the entire range of operation, the default
-characteristic curve available in the TESPy library, shown in figure
-below, is used.
+the datasheets for the entire range of operation, the `default
+characteristic curve <https://tespy.readthedocs.io/en/main/api/data.html#id6>`_
+available in the TESPy library, shown in figure below, is used.
 
 .. figure:: ../images/advanced_2.png
    :alt: Default characteristic curve for the isentropic efficiency of
