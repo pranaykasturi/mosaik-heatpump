@@ -104,7 +104,7 @@ data/tank_data.csv?ref_type=heads>`_ file.
    :lines: 44-49
    :lineno-start: 44
 
-The output data is saved into ‘hwt_trial_1.hdf5’ file.
+The output data is saved into ‘hwt_trial.csv’ file.
 
 .. literalinclude:: ../code/examples/run_tank.py
    :language: python
