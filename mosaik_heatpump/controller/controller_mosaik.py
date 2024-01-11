@@ -11,11 +11,7 @@ META = {
         'Controller': {
             'public': True,
             'params': ['params'],
-            'attrs': ['_', 'T_amb', 'T_amb_hwt', 'heat_source_T', 'hp_demand', 'heat_supply', 'heat_demand',
-                      'sh_demand', 'sh_supply', 'dhw_demand', 'dhw_supply', 'sh_in_F', 'sh_in_T', 'sh_out_F',
-                      'dhw_in_F', 'dhw_in_T', 'dhw_out_F', 'hp_in_F', 'hp_in_T', 'hp_out_F', 'hp_out_T', 'hp_supply',
-                      'T_mean_hwt', 'hwt_mass', 'hwt_hr_P_th_set', 'hp_on_fraction', 'hp_cond_m', 'sh_out_T',
-                      'dhw_out_T', 'P_hr_sh', 'P_hr_dhw', 'T_room', 'bottom_layer_T', 'top_layer_T'],
+            'attrs': ['_'],
         },
     },
 }
@@ -23,6 +19,10 @@ META = {
 hp_attrs = ['hp_demand', 'hp_out_T', 'T_amb', 'heat_source_T']
 hwt_attrs = ['sh_in_F', 'sh_in_T', 'sh_out_F', 'dhw_in_F', 'dhw_in_T', 'dhw_out_F', 'T_amb_hwt', 'hp_in_T', 'hp_in_F',
              'hp_out_F']
+db_attrs = ['heat_supply', 'heat_demand', 'sh_demand', 'sh_supply', 'dhw_demand', 'dhw_supply', 'hp_supply',
+            'T_mean_hwt', 'hwt_mass', 'hwt_hr_P_th_set', 'hp_on_fraction', 'hp_cond_m', 'sh_out_T', 'dhw_out_T',
+            'P_hr_sh', 'P_hr_dhw', 'T_room', 'bottom_layer_T', 'top_layer_T']
+
 
 class ControllerSimulator(mosaik_api.Simulator):
     def __init__(self):
@@ -47,6 +47,7 @@ class ControllerSimulator(mosaik_api.Simulator):
         self.step_size = step_size
         if same_time_loop:
             self.meta['type'] = 'event-based'
+        self.meta['models']['Controller']['attrs'] += hp_attrs + hwt_attrs + db_attrs
         return self.meta
 
     def create(self, num, model, params=None):
@@ -104,8 +105,8 @@ class ControllerSimulator(mosaik_api.Simulator):
                 if attr not in self.meta['models']['Controller'][
                         'attrs']:
                     raise ValueError('Unknown output attribute: %s' % attr)
-                if self.meta['type'] =='event-based':
-                    if self.first_iteration and attr in hp_attrs:
+                if self.meta['type'] == 'event-based':
+                    if self.first_iteration and (attr in hp_attrs or attr in db_attrs):
                         data[eid][attr] = getattr(self.models[eid], attr)
                     elif self.final_iteration and attr in hwt_attrs:
                         if attr == 'T_amb_hwt':
@@ -118,6 +119,7 @@ class ControllerSimulator(mosaik_api.Simulator):
 
 def main():
     return mosaik_api.start_simulation(ControllerSimulator())
+
 
 if __name__ == '__main__':
     main()
