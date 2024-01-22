@@ -126,7 +126,7 @@ class Controller():
 
                 if self.hp_status == 'on':
                     if self.bottom_layer_T < self.T_hp_sp_h:
-                        self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_l - self.bottom_layer_T) / self.step_size
+                        self.hp_demand = self.hwt_mass * 4184 * (self.T_hp_sp_h - self.bottom_layer_T) / self.step_size
                     else:
                         self.hp_demand = 0
                         self.hp_status = 'off'

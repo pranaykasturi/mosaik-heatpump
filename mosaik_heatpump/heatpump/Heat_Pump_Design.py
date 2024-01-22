@@ -1,3 +1,4 @@
+import math
 import os
 from hplib import hplib as hpl
 from tespy.networks import Network
@@ -16,7 +17,7 @@ JSON_DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'eta_s_
 
 class Heat_Pump_Design():
     """
-    Design of the heat pump model for the different the different calculation modes
+    Design of the heat pump model for the different calculation modes
     """
     def __init__(self, params, COP_m_data=None):
 
@@ -50,6 +51,7 @@ class Heat_Pump_Design():
         self.ic = False  # Intercooler between the compressors, if more than one stage of compression
         self.sh = False  # Super heater for the fluid entering the evaporator
         self.idx = None  # Index to keep track of the current design point
+        self.id_old = None  # Index to keep track of the previous design point
         self.nw = None  # The network with all the components
         self.Q_Demand = None  # The heat demand for the heat pump
         self.Q_Supplied = None  # Heat supplied by the heat pump
@@ -175,9 +177,9 @@ class Heat_Pump_Design():
 
                     if heatload_des is None:
                         self.skip_step = True
-                        self.heatload_des = 0
-                        self.heatload_max = 0
-                        self.heatload_min = 0
+                        self.heatload_des = 0.0
+                        self.heatload_max = 0.0
+                        self.heatload_min = 0.0
 
                     else:
                         self.heatload_des = heatload_des * 1000
@@ -210,6 +212,9 @@ class Heat_Pump_Design():
         * Superheater between the evaporator and the compressor is optional
         * fixed and variable mass flow in the evaporator
         """
+
+        # Index for the design point in the 'detailed' calculation mode
+        self.id_old = self.idx
 
         # The parameters that will vary for the different heat pump models are defined here
         # 'ref' is the refrigerant, 'm_air'/'m_water' define the heat source of the heat pump
@@ -473,11 +478,11 @@ class Heat_Pump_Design():
         Q_Demand = inputs.get('Q_Demand')
         if Q_Demand is not None:
             self.Q_Demand = Q_Demand
+        else:
+            self.Q_Demand = 0.0
+            self.skip_step = True
 
-        # Index for the design point in the 'detailed' calculation mode
-        id_old = self.idx
-
-        if self.calc_mode != 'fixed':
+        if (self.calc_mode != 'fixed') and (self.skip_step is not True):
             self._etas_heatload_id()
 
         if not self.skip_step:
@@ -486,23 +491,21 @@ class Heat_Pump_Design():
             if self.calc_mode == 'hplib':
 
                 if self.Q_Demand < self.heatload_min:
-                    self.skip_step = True
+                    # Forcing the heat pump to operate atleast at the minimum heating capacity
+                    self.Q_Demand = self.heatload_min
 
-                if not self.skip_step:
-                    results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
-                                               t_amb=self.T_amb, mode=1)
-                    self.cond_m = round(results['m_dot'], 2)
-                    self.COP = round(results['COP'], 2)
-                    self.P_cons = round(results['P_el'], 2)
-                    self.cons_T = round(results['T_out'], 2)
-                    self.Q_Supplied = round(results['P_th'], 2)
-                    if self.Q_Supplied > self.Q_Demand:
-                        self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
-                        self.Q_Supplied = self.Q_Demand
-                        self.P_cons *= self.on_fraction
-                        self.cond_m *= self.on_fraction
-                else:
-                    self.step_error()
+                results = self.hp.simulate(t_in_primary=self.heat_source_T, t_in_secondary=self.cond_in_T,
+                                           t_amb=self.T_amb, mode=1)
+                self.cond_m = round(results['m_dot'], 2)
+                self.COP = round(results['COP'], 2)
+                self.P_cons = round(results['P_el'], 2)
+                self.cons_T = round(results['T_out'], 2)
+                self.Q_Supplied = round(results['P_th'], 2)
+                if self.Q_Supplied > self.Q_Demand:
+                    self.on_fraction = round(self.Q_Demand/self.Q_Supplied, 2)
+                    self.Q_Supplied = self.Q_Demand
+                    self.P_cons *= self.on_fraction
+                    self.cond_m *= self.on_fraction
             # 'hplib' calcuation mode - end
 
             # 'fixed' calcuation mode - start
@@ -523,14 +526,18 @@ class Heat_Pump_Design():
 
             else:
 
-                if self.Q_Demand < self.heatload_min:
-                    self.skip_step = True
-                elif self.Q_Demand > self.heatload_max:
-                    self.Q_Supplied = self.heatload_max
-                    Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
-                else:
-                    self.Q_Supplied = self.Q_Demand
-                    Q_Supply_Excess = self.heatload_max - self.Q_Supplied
+                # # Regulated operation of the heat pump
+                # if self.Q_Demand < self.heatload_min:
+                #     self.skip_step = True
+                # elif self.Q_Demand > self.heatload_max:
+                #     self.Q_Supplied = self.heatload_max
+                #     Q_Demand_Excess = self.Q_Demand - self.Q_Supplied
+                # else:
+                #     self.Q_Supplied = self.Q_Demand
+                #     Q_Supply_Excess = self.heatload_max - self.Q_Supplied
+
+                # Conditions for always operating te heat pump at the maximum heating capacity for the conditions
+                self.Q_Supplied = self.heatload_max
 
                 if not self.skip_step:
 
@@ -563,7 +570,7 @@ class Heat_Pump_Design():
                     elif self.calc_mode == 'detailed':
 
                         # Solving the TESPy network in design mode for the closest design point
-                        if id_old != self.idx:
+                        if self.id_old != self.idx:
                             try:
                                 self._design_hp()
                             except:
