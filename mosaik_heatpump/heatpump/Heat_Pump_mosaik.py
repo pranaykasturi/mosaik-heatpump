@@ -33,8 +33,6 @@ class HeatPumpSimulator(mosaik_api.Simulator):
         self.step_size = None
         self.time = 0
 
-        self.parallelization = False
-        self.processes = 1
         # start time of simulation as UTC ISO 8601 time string
 
     def init(self, sid, time_resolution, step_size, same_time_loop=False):
@@ -51,12 +49,6 @@ class HeatPumpSimulator(mosaik_api.Simulator):
 
     def create(self, num, model, params):
         entities = []
-
-        if 'processes' in params:
-            self.parallelization = True
-            self.processes = params['processes']
-            if num < self.processes:
-                self.processes = num
 
         COP_m_data = None
         if params['calc_mode'] == 'fast':
@@ -87,15 +79,8 @@ class HeatPumpSimulator(mosaik_api.Simulator):
 
             self.models[eid].inputs.step_size = self.step_size
 
-        if self.parallelization:
-            pool = mp.Pool(processes=self.processes)
-            for eid, model in self.models.items():
-                pool.apply_async(model.step(), args=())
-            pool.close()
-            pool.join()
-        else:
-            for eid, model in self.models.items():
-                model.step()
+        for eid, model in self.models.items():
+            model.step()
 
         if self.meta['type'] == 'event-based':
             return None
