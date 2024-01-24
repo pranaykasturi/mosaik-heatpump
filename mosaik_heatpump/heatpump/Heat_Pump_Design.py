@@ -116,8 +116,6 @@ class Heat_Pump_Design():
         * Identifies the closest design point for the inputs, for the 'detailed' calculation mode
         """
 
-        self.skip_step = False
-
         # Check to ensure temperature in the condenser is higher than in the evaporator
         if self.heat_source_T > self.cond_in_T:
             self.skip_step = True
@@ -480,6 +478,8 @@ class Heat_Pump_Design():
             self.Q_Demand = Q_Demand
         else:
             self.Q_Demand = 0.0
+
+        if self.Q_Demand <= 0:
             self.skip_step = True
 
         if (self.calc_mode != 'fixed') and (self.skip_step is not True):
