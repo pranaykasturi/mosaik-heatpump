@@ -138,5 +138,5 @@ is calculated to be sent to the heat pump.
 Module Documentation
 --------------------
 
-.. automodule:: mosaik_heatpump.controller.controller
+.. automodule:: mosaik_components.hp_hwt_controller.controller
    :members:

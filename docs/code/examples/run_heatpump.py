@@ -3,7 +3,7 @@ import os
 
 SIM_CONFIG = {
     'HeatPumpSim': {
-        'python': 'mosaik_heatpump.heatpump.Heat_Pump_mosaik:HeatPumpSimulator',
+        'python': 'mosaik_components.heatpump.Heat_Pump_mosaik:HeatPumpSimulator',
     },
     'CSV': {
         'python': 'mosaik_csv:CSV',

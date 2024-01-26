@@ -241,13 +241,13 @@ The different entities are then connected and the simulation is executed.
 Module Documentation
 --------------------
 
-.. automodule:: mosaik_heatpump.heatpump.Heat_Pump_Model
+.. automodule:: mosaik_components.heatpump.Heat_Pump_Model
 
-.. autoclass:: mosaik_heatpump.heatpump.Heat_Pump_Model.Heat_Pump
+.. autoclass:: mosaik_components.heatpump.Heat_Pump_Model.Heat_Pump
    :members:
 
-.. autoclass:: mosaik_heatpump.heatpump.Heat_Pump_Model.Heat_Pump_Inputs
+.. autoclass:: mosaik_components.heatpump.Heat_Pump_Model.Heat_Pump_Inputs
    :members:
 
-.. autoclass:: mosaik_heatpump.heatpump.Heat_Pump_Model.Heat_Pump_State
+.. autoclass:: mosaik_components.heatpump.Heat_Pump_Model.Heat_Pump_State
    :members:

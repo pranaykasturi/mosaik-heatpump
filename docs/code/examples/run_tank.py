@@ -4,7 +4,7 @@ import os
 
 SIM_CONFIG = {
     'HotWaterTankSim': {
-        'python': 'mosaik_heatpump.hotwatertanksim.hotwatertank_mosaik:HotWaterTankSimulator',
+        'python': 'mosaik_components.hotwatertank.hotwatertank_mosaik:HotWaterTankSimulator',
     },
     'CSV': {
         'python': 'mosaik_csv:CSV',

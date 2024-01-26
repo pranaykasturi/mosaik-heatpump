@@ -90,7 +90,7 @@ follows:
    Parametrization_NominalData.py?ref_type=heads>`_ file, should be added
    to the *'_design_hp’* method of the `heat_pump_design.py <https:
    //gitlab.com/mosaik/components/energy/mosaik-heatpump/-/blob/10-improve
-   -documentation/mosaik_heatpump/heatpump/Heat_Pump_Design.py?ref_type=heads>`_
+   -documentation/mosaik_components/heatpump/Heat_Pump_Design.py?ref_type=heads>`_
    file (lines 212-232).
 
 2. **'fast' calculation mode data generation**
@@ -112,6 +112,6 @@ follows:
 Module Documentation
 --------------------
 
-.. automodule:: mosaik_heatpump.heatpump.Heat_Pump_Design
+.. automodule:: mosaik_components.heatpump.Heat_Pump_Design
    :members:
    :private-members:

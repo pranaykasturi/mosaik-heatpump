@@ -1,3 +1,3 @@
 include CHANGES.txt
-include mosaik_heatpump/heatpump/COP_m_data.json
-include mosaik_heatpump/heatpump/eta_s_data.json
+include mosaik_components/heatpump/COP_m_data.json
+include mosaik_components/heatpump/eta_s_data.json

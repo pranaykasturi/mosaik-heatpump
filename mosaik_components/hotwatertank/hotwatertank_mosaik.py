@@ -4,7 +4,7 @@ Mosaik interface for hot water tank model
 """
 import mosaik_api
 import jsonpickle
-from mosaik_heatpump.hotwatertanksim.hotwatertank import HotWaterTank
+from mosaik_components.hotwatertank.hotwatertank import HotWaterTank
 
 class HotWaterTankSimulator(mosaik_api.Simulator):
     def __init__(self):

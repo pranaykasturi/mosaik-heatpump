@@ -2,7 +2,7 @@ __doc__ = """
 This module contains a simulation model of a Heat Pump based on the library TESPy.
 """
 
-from mosaik_heatpump.heatpump.Heat_Pump_Design import Heat_Pump_Design
+from mosaik_components.heatpump.Heat_Pump_Design import Heat_Pump_Design
 
 class Heat_Pump_Initiation():
     """Initiation of the Heat Pump based on the initial parameters"""

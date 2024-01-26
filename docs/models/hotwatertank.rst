@@ -121,6 +121,6 @@ The different entities are then connected and the simulation is executed.
 Module Documentation
 --------------------
 
-.. automodule:: mosaik_heatpump.hotwatertanksim.hotwatertank
+.. automodule:: mosaik_components.hotwatertank.hotwatertank
    :members:
 

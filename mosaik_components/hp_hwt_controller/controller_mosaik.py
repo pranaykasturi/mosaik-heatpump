@@ -3,7 +3,7 @@ Mosaik interface for controller model
 
 """
 import mosaik_api
-from mosaik_heatpump.controller.controller import Controller
+from mosaik_components.hp_hwt_controller.controller import Controller
 
 META = {
     'type': 'time-based',

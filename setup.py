@@ -22,7 +22,7 @@ setup(
         "": ["*.json"]
     },
     include_package_data=True,
-    py_modules=['mosaik_heatpump'],
+    py_modules=['mosaik_components'],
     entry_points={
         'console_scripts': [
         ],

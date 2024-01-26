@@ -10,13 +10,13 @@ sim_config = {
         'python': 'mosaik_csv_writer:CSVWriter'
     },
     'HeatPumpSim': {
-        'python': 'mosaik_heatpump.heatpump.Heat_Pump_mosaik:HeatPumpSimulator',
+        'python': 'mosaik_components.heatpump.Heat_Pump_mosaik:HeatPumpSimulator',
     },
     'HotWaterTankSim': {
-        'python': 'mosaik_heatpump.hotwatertanksim.hotwatertank_mosaik:HotWaterTankSimulator',
+        'python': 'mosaik_components.hotwatertank.hotwatertank_mosaik:HotWaterTankSimulator',
     },
     'ControllerSim': {
-        'python': 'mosaik_heatpump.controller.controller_mosaik:ControllerSimulator',
+        'python': 'mosaik_components.hp_hwt_controller.controller_mosaik:ControllerSimulator',
     },
 }
 
