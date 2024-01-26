@@ -160,8 +160,8 @@ capacity and power consumption data is summarized in the table below.
 
 The heating capacity data has to be saved in the `‘Heat_Load_Data.csv’
 <https://gitlab.com/mosaik/components/energy/mosaik-heatpump/-/blob/10-imp
-rove-documentation/docs/code/scripts/Compressor%20Parametrization/Data/Hea
-t_Load_Data.csv?ref_type=heads>`_  file and the power consumption data has
+rove-documentation/docs/code/scripts/Compressor_Parametrization/Data/Heat
+_Load_Data.csv?ref_type=heads>`_  file and the power consumption data has
 to be saved in the `‘PI_Data.csv’ <https://gitlab.com/mosaik/components/
 energy/mosaik-heatpump/-/blob/10-improve-documentation/docs/code/scripts/
 Compressor_Parametrization/Data/PI_Data.csv?ref_type=heads>`_ file.

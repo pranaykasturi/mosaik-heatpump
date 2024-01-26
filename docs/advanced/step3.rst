@@ -91,7 +91,7 @@ follows:
    to the *'_design_hp’* method of the `heat_pump_design.py <https:
    //gitlab.com/mosaik/components/energy/mosaik-heatpump/-/blob/10-improve
    -documentation/mosaik_components/heatpump/Heat_Pump_Design.py?ref_type=heads>`_
-   file (lines 212-232).
+   file (lines 217-237).
 
 2. **'fast' calculation mode data generation**
 
