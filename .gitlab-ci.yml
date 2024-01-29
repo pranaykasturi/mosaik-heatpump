@@ -9,33 +9,13 @@ stages:
     -   pre_release
 
 
-python38:
-    image: python:3.8.17-slim-buster
+pytest:
+    image: dmanthing/multi-python
     script:
-        -   python -m pip install --quiet --upgrade -r requirements.txt
-        -   tox -e py38
+        -   tox
     stage: test
-
-python39:
-    image: python:3.9.17-slim-buster
-    script:
-        -   python -m pip install --quiet --upgrade -r requirements.txt
-        -   tox -e py39
-    stage: test
-
-python310:
-    image: python:3.10.12-slim-buster
-    script:
-        -   python -m pip install --quiet --upgrade -r requirements.txt
-        -   tox -e py310
-    stage: test
-
-python311:
-    image: python:3.11.4-slim-buster
-    script:
-        -   python -m pip install --quiet --upgrade -r requirements.txt
-        -   tox -e py311
-    stage: test
+    rules:
+      - if: '$CI_COMMIT_TAG == null'
 
 python311_scenarios:
     image: python:3.11.4-slim-buster
