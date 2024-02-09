@@ -218,18 +218,19 @@ class Heat_Pump_Design():
         # 'ref' is the refrigerant, 'm_air'/'m_water' define the heat source of the heat pump
         # Parametrization obtained from 'Parametrization_NominalData.py'
         if 'air_6kw' in self.hp_model.lower():
-            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 10}
+            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'cd_p0': 20, 'ev_p0': 15}
         elif 'air_8kw' in self.hp_model.lower():
-            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 12}
+            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'cd_p0': 20, 'ev_p0': 15}
         elif 'air_16kw' in self.hp_model.lower():
-            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'ttd_u': 15}
+            params_des = {'ref': 'R410a', 'm_air': 1, 'm_water': 0, 'cd_p0': 20, 'ev_p0': 15}
         elif 'air_60kw' in self.hp_model.lower():
-            params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'ttd_u': 15, 'pr': 2}
-            self.cmp_stages = 2  # Number of stages of compression
-            self.ic = True       # Intercooler between compression stages
-            self.sh = True       # Superheater between evaporator and compressor
+            if '1stage' in self.hp_model.lower():
+                params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'cd_p0': 20, 'ev_p0': 15}
+            else:
+                params_des = {'ref': 'R22', 'm_air': 1, 'm_water': 0, 'cd_p0': 20, 'ev_p0': 15, 'pr': 1.75}
+                self.cmp_stages = 2  # Number of stages of compression
         elif 'air_30kw' in self.hp_model.lower():
-            params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0, 'ttd_u': 5}
+            params_des = {'ref': 'R404a', 'm_air': 1, 'm_water': 0}
             if '1stage' not in self.hp_model.lower():
                 self.cmp_stages = 2
                 params_des['pr'] = 1.35
@@ -350,7 +351,7 @@ class Heat_Pump_Design():
 
         # condenser system
 
-        cd.set_attr(pr1=0.99, pr2=0.99, ttd_u=params_des['ttd_u'], design=['pr2', 'ttd_u'],
+        cd.set_attr(pr1=0.99, pr2=0.99, ttd_u=5, design=['pr2', 'ttd_u'],
                     offdesign=['zeta2', 'kA_char'])
 
         crp.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
@@ -418,12 +419,18 @@ class Heat_Pump_Design():
 
         if 'fixed_evap_m' in self.hp_model.lower():
             amb_in_apu.set_attr(m=params_des['evap_m'])
-            dr_erp.set_attr(p0=params_des['ev_p0'])
-            c_in_cd.set_attr(p0=params_des['cd_p0'])
-            if not self.sh:
-                dr_cp1.set_attr(h0=params_des['dr_h0'])
         else:
             ev_amb_out.set_attr(T=self.LFE_des)
+
+        # Starting values for convergence of calculations
+        if 'ev_p0' in params_des.keys():
+            dr_erp.set_attr(p0=params_des['ev_p0'])
+        if 'cd_p0' in params_des.keys():
+            c_in_cd.set_attr(p0=params_des['cd_p0'])
+        if 'dr_h0' in params_des.keys():
+            if not self.sh:
+                dr_cp1.set_attr(h0=params_des['dr_h0'])
+
 
         # %% key paramter
         cons.set_attr(Q=-self.heatload_des)
