@@ -60,8 +60,14 @@ erp = Pump('evaporator recirculation pump')
 
 # compressor-system
 
+# One stage of compression
+# cp1 = Compressor('compressor')
+
+# Two stages of compression
 cp1 = Compressor('compressor 1')
 cp2 = Compressor('compressor 2')
+
+
 # %% connections
 
 # consumer system
@@ -101,6 +107,12 @@ dr_cp1 = Connection(dr, 'out2', cp1, 'in1')
 nw.add_conns(dr_cp1)
 
 # compressor-system
+
+# One stage of compression
+# cp1_close = Connection(cp1, 'out1', cool_closer, 'in1')
+# nw.add_conns(cp1_close)
+
+# Two stages of compression
 cp1_cp2 = Connection(cp1, 'out1', cp2, 'in1')
 cp2_close = Connection(cp2, 'out1', cool_closer, 'in1')
 nw.add_conns(cp1_cp2, cp2_close)
@@ -127,6 +139,10 @@ apu.set_attr(eta_s=0.8, design=['eta_s'], offdesign=['eta_s_char'])
 
 # compressor system
 
+# One stage of compression
+# cp1.set_attr(eta_s=eta_s, design=['eta_s'], offdesign=['eta_s_char'])
+
+# Two stages of compression
 cp1.set_attr(eta_s=eta_s, design=['eta_s'], offdesign=['eta_s_char'])
 cp2.set_attr(eta_s=eta_s, pr=pr, design=['eta_s'], offdesign=['eta_s_char'])
 
@@ -134,15 +150,15 @@ cp2.set_attr(eta_s=eta_s, pr=pr, design=['eta_s'], offdesign=['eta_s_char'])
 
 # condenser system
 
-c_in_cd.set_attr(p0=25, fluid={'water': 0, ref: 1, 'air': 0})
+c_in_cd.set_attr(p0=20, fluid={'water': 0, ref: 1, 'air': 0})
 close_crp.set_attr(T=(LWC-5), p=1.5, fluid={'water': 1, ref: 0, 'air': 0},
                    offdesign=['m'])
 cd_cons.set_attr(T=LWC, design=['T'])
 
 # evaporator system cold side
-dr_erp.set_attr(p0=2)
+dr_erp.set_attr(p0=15)
 erp_ev.set_attr(m=Ref(va_dr, 1.15, 0))
-dr_cp1.set_attr(h0=350)
+# dr_cp1.set_attr(h0=250)
 
 # evaporator system hot side
 
@@ -159,5 +175,11 @@ cons.set_attr(Q=-HL)
 
 nw.solve('design')
 nw.print_results()
+
+# One stage of compression
+# print(nw.get_comp('compressor').P.val)
+
+# Two stages of compression
 print(nw.get_comp('compressor 1').P.val + nw.get_comp('compressor 2').P.val)
+
 nw.save('Par_NominalData')
