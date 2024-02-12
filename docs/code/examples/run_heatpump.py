@@ -44,8 +44,7 @@ csv_sim_writer = world.start('CSV_writer', start_date='01.01.2020 00:00', date_f
 csv_writer = csv_sim_writer.CSVWriter(buff_size=60 * 60)
 
 # Connect entities
-world.connect(heat_load, heatpump, ('Q_Demand','Q_Demand'), ('heat_source_T','heat_source_T'),
-              ('heat_source_T','T_amb'), ('cond_in_T','cond_in_T'))
+world.connect(heat_load, heatpump, 'Q_Demand', 'heat_source_T', ('heat_source_T', 'T_amb'), 'cond_in_T')
 world.connect(heatpump, csv_writer, 'Q_Demand', 'Q_Supplied', 'heat_source_T', 'P_Required', 'COP')
 
 # Run simulation

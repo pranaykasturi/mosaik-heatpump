@@ -114,8 +114,8 @@ for i in range(len(model_list)):
     csv_writer = csv_sim_writer.CSVWriter(buff_size=60 * 60)
 
     # connections between the different models
-    world.connect(heat_load[0], ctrls[0], ('T_amb', 'T_amb'), ('T_amb', 'heat_source_T'), ('SH Demand [kW]', 'sh_demand'),
-                  ('DHW Demand [L]', 'dhw_demand'), ('dhw_in_T', 'dhw_in_T'))
+    world.connect(heat_load[0], ctrls[0], 'T_amb', ('T_amb', 'heat_source_T'), ('SH Demand [kW]', 'sh_demand'),
+                  ('DHW Demand [L]', 'dhw_demand'), 'dhw_in_T')
 
     world.connect(hwts[0], ctrls[0], ('T_mean', 'T_mean_hwt'), ('mass', 'hwt_mass'),
                   ('sensor_00.T', 'bottom_layer_T'), ('sensor_04.T', 'top_layer_T'),
@@ -134,7 +134,7 @@ for i in range(len(model_list)):
                   ('cond_m', 'hp_cond_m'))
 
     world.connect(ctrls[0], heatpumps[0], ('hp_demand', 'Q_Demand'),
-                  ('T_amb', 'T_amb'), ('heat_source_T', 'heat_source_T'), time_shifted=True,
+                  'T_amb', 'heat_source_T', time_shifted=True,
                   initial_data={'hp_demand': 0, 'T_amb': 5, 'heat_source_T': 5})
 
     world.connect(hwts[0], heatpumps[0], ('hp_out.T', 'cond_in_T'))
