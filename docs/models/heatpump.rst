@@ -190,6 +190,12 @@ capacity and configuration, can be added to the model, following the
 procedure shown in the :doc:`example <../advanced/index>` of the
 “Air_30kW” heat pump.
 
+.. note::
+
+    With TESPy, it is possible to simulate the performance of water-water
+    heat pumps as well. However, this has not yet been integrated into this
+    model and will be a part of a later release.
+
 Example
 -------
 
