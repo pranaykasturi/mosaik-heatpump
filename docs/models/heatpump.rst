@@ -29,7 +29,8 @@ to that of the simpler calculations in *hplib* model.
 *hplib* model
 -------------
 
-The *hplib* model is based on hplib ("Heat Pump LIBrary"), an
+The *hplib* model is based on `hplib ("Heat Pump LIBrary")
+<https://github.com/FZJ-IEK3-VSA/hplib>`_, an
 open-source Python library that simulates the performance heat pumps
 using parametric fit equations for the electric power and COP. The fit
 parameters are identified by applying a least square regression model on
@@ -86,16 +87,20 @@ heat pump model based on TESPy is available, the keyword for that model
 can be specified in the ‘\ *equivalent_hp_model*\ ’. If not, the
 operation limits can be specified via ‘\ *hp_limits*\ ’ parameter.
 
+An example of the dictionary with the required parameters can be seen in
+the :ref:`module documentation <module_documentation_hp>`.
+
 *tespy* model
 -------------
 
-The *tespy* model is based on TESPy (“Thermal Engineering Systems in
-Python”), an open-source Python library that provides a powerful
+The *tespy* model is based on `TESPy (“Thermal Engineering Systems in
+Python”) <https://github.com/oemof/tespy>`_,
+an open-source Python library that provides a powerful
 simulation package for thermal processes like power plants, district
 heating systems, heat pumps etc. An initial version of this model has
 been used in a `previous work <https://doi.org/10.1186/s42162-021-00180-6>`_,
-and significant changes have been made for this study.
-The performance of the heat pump is simulated by
+and significant changes have been made later for a master's thesis and for different
+research projects. The performance of the heat pump is simulated by
 considering the energy and mass balances in the individual
 “\ *components*\ ” of the heat pump – condenser, evaporator, compressor,
 expansion valve, heat exchangers and pumps – and the state of fluids in
@@ -111,16 +116,8 @@ of the heat pump system used in this work is shown in the figure below.
 
    Schematic of the heat pump system network
 
-TESPy has two modes of calculation, *design* and *offdesign*, to solve
-the network. The *design* mode is used to design the system and forms
-the first calculation of the network. While designing the plant, TESPy
-offers much greater detail as compared to hplib, in terms of the
-parametrization of the individual components, for example, the
-isentropic efficiency of the compressor. The *offdesign* mode is used to
-calculate the performance of the system if parameters deviate from the
-design point, for example, operation at partial loads or operation at
-different temperature/pressure levels. The system calculations from the
-*design* mode form the basis for the *offdesign* mode.
+The flexibility offered by the TESPy library in choosing the components
+of the network has been implemented through the following features in the model:
 
 **Stages of compression**
 
@@ -133,13 +130,28 @@ different temperature/pressure levels. The system calculations from the
 
 -  Superheater between the evaporator and the compressor
 
+TESPy has two modes of calculation, *design* and *offdesign*, to solve
+the network. The *design* mode is used to design the system and forms
+the first calculation of the network. While designing the plant, TESPy
+offers much greater detail as compared to hplib, in terms of the
+parametrization of the individual components, for example, the
+isentropic efficiency of the compressor. The *offdesign* mode is used to
+calculate the performance of the system if parameters deviate from the
+design point, for example, operation at partial loads or operation at
+different temperature/pressure levels. The system calculations from the
+*design* mode form the basis for the *offdesign* mode. Both of these
+calculation modes have been implemented in this model.
+
 How to use the *tespy* based calculation modes
 ..............................................
 
 The user must specify the ‘\ *calc_mode*\ ’ parameter as
-‘\ *detailed*\ ’ or ‘\ *fast*\ ’, and the ‘\ *heat_source*\ ’, either
-‘\ *air*\ ’ or ‘\ *water*\ ’, must be specified. For the
-‘\ *hp_model*\ ’ parameter, the user can choose from the different heat
+‘\ *detailed*\ ’ or ‘\ *fast*\ ’. A detailed description of these two
+modes of calculation can be found here :doc:`here <../advanced/step3>`.
+
+The ‘\ *heat_source*\ ’, either ‘\ *air*\ ’ or ‘\ *water*\ ’, must be specified.
+
+For the ‘\ *hp_model*\ ’ parameter, the user can choose from the different heat
 pump models available, shown in the table below.
 
 +--------------------------+------------------+---------------------------+
@@ -243,6 +255,9 @@ The different entities are then connected and the simulation is executed.
    :language: python
    :lines: 46-52
    :lineno-start: 46
+
+
+.. _module_documentation_hp:
 
 Module Documentation
 --------------------
