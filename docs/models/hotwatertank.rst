@@ -20,7 +20,7 @@ the layers have been considered.
 Parametrization of the model
 ----------------------------
 
-The schematic of the hot water tank model is shown in figure 3.9. The
+The schematic of the hot water tank model is shown in the figure below. The
 dimensions of the tank are specified in terms of its height, and either
 the volume or diameter. The tank can be parametrized with sensors in the
 model to record its temperature. The initial temperature of all the
@@ -30,7 +30,8 @@ The flows into and out of the tank are specified as the connections of
 the hot water tank model. The flow going to the heat pump (*HP_out*),
 the space heating demand (*SH_out*), and the domestic hot water demand
 (*DHW_out*) are connected to the bottom layer, the fourth layer and the
-top layer respectively. As described above, the flows coming into the
+top layer respectively in the example schematic shown below.
+As explained earlier, the flows coming into the
 tank are not connected to a fixed layer in the tank. They are connected
 to the layer with a temperature closest to that of the flow.
 

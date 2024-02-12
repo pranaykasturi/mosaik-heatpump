@@ -513,8 +513,8 @@ class Connection(object):
     Devices are connected to the hotwater tank via connections.
 
     Each connection is associated with a :class:`Layer`. For input connections
-    (F>0) the correspoding layer is determined by temperature comparison. The
-    layer whose temperatue is closest to the connection temperature is the
+    (F>0) the corresponding layer is determined by temperature comparison. The
+    layer whose temperature is closest to the connection temperature is the
     corresponding one. For output connections (F<0) the corresponding layer
     depends on the position of the connection.  The corresponding layer of a
     connection is not fix, but may change during the simulation, if the flow or
