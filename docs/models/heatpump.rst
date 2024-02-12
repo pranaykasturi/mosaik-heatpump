@@ -48,8 +48,8 @@ available in the hplib library.
 
 The equations 1 and 2 are the fit equations for the electric power
 and COP respectively. The reference values, P\ :sub:`el,ref` is the
-electrical power consumption at -7\ :sup:`0`\ C source temperature and
-52\ :sup:`0`\ C supply water temperature. In both the equations,
+electrical power consumption at -7°C source temperature and
+52°C supply water temperature. In both the equations,
 p\ :sub:`1-4` are the fit parameters, T\ :sub:`in` is the source inlet
 temperature, T\ :sub:`out` is the supply water temperature, and
 T\ :sub:`amb` is the ambient temperature.
@@ -67,7 +67,7 @@ heating capacity, and the condenser mass flow as outputs. The electric power and
 COP are estimated as shown in equations 1 and 2
 respectively. The heating capacity is calculated from the electric power
 and COP. The mass flow in the condenser is calculated assuming a
-temperature difference of 5\ :sup:`0`\ C.
+temperature difference of 5°C.
 
 How to use the *hplib* calculation mode
 .......................................

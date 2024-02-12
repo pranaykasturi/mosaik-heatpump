@@ -19,7 +19,7 @@ input value is then identified from the :ref:`expanded heating capacity table
 <expanded_heating_capacity_table>`.
 The model checks that the inlet water temperature is lower than the maximum
 possible condenser outlet temperature at the identified design source air
-temperature. Assuming a temperature difference of 5\ :sup:`0`\ C in the
+temperature. Assuming a temperature difference of 5°C in the
 condenser in the design case, an initial condenser outlet temperature is
 estimated. The closest design point to the estimated condenser outlet
 temperature is then identified from the :ref:`extended heating capacity
@@ -54,7 +54,7 @@ In addition to the detailed mode of calculation explained above, a fast
 calculation mode has also been implemented in the model to improve its
 computational speed. The model is discreetly parametrized over the
 entire operation range of the heat pump, at a resolution of
-1\ :sup:`0`\ C for both the inputs, the source air temperature, and the
+1°C for both the inputs, the source air temperature, and the
 condenser water inlet temperature. The detailed calculation mode can be
 implemented over this range of inputs and the output data from the
 model- the coefficient of performance (COP) of the heat pump and the

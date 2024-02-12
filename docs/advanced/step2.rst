@@ -54,19 +54,19 @@ operating conditions shown in table 3.3.
 
    +-----------------------------+---------------------------------------------+
    | Source air                  | -20, -15, -12, -10, -7, -2, 2, 7, 10, 12,   |
-   | temperatures (:sup:`0`\ C)  | 15, 20, 25, 30, 35                          |
+   | temperatures (°C)           | 15, 20, 25, 30, 35                          |
    +-----------------------------+---------------------------------------------+
    | Condenser outlet            | 15, 20, 25, 30, 35, 40, 45, 50, 55          |
-   | temperatures (:sup:`0`\ C)  |                                             |
+   | temperatures (°C)           |                                             |
    +-----------------------------+---------------------------------------------+
 
 The operating range of the heat pump for the source air temperature is
--20\ :sup:`0`\ C to 35\ :sup:`0`\ C. The actual operation range of the
-heat pump on the condenser outlet temperature is 25\ :sup:`0`\ C to
-60\ :sup:`0`\ C. In the model, the range is further increased to
-15\ :sup:`0`\ C to 60\ :sup:`0`\ C, in order to simulate low temperature
+-20°C to 35°C. The actual operation range of the
+heat pump on the condenser outlet temperature is 25°C to
+60°C. In the model, the range is further increased to
+15°C to 60°C, in order to simulate low temperature
 lift conditions. The temperature difference in the condenser, constant
-at 5\ :sup:`0`\ C in the design case, has been used to calculate the
+at 5°C in the design case, has been used to calculate the
 condenser inlet temperature.
 
 Extension of the heating capacity table of the heat pump
@@ -85,19 +85,19 @@ electrical power curves as shown in figure below.
 
 In all the plots, the x-axis corresponds to the source (air) temperature.
 The data is available for the entire range of source air temperature, but
-only for two condenser outlet temperatures, 35\ :sup:`0`\ C and 55\ :sup:`0`\ C.
+only for two condenser outlet temperatures, 35°C and 55°C.
 
 The heating capacity increases with an increase in the source air
 temperature, but does not change significantly with a change in the
 condenser outlet temperature. At a given source air temperature, the
 heating capacity for all the other condenser outlet temperatures is
-assumed to be the average of the heating capacities at 35\ :sup:`0`\ C
-and 55\ :sup:`0`\ C.
+assumed to be the average of the heating capacities at 35°C
+and 55°C.
 
 The power consumption changes with both the source air temperature and
 the condenser outlet temperature. An approach based on Carnot efficiency
 has been used to predict the power consumption at the condenser outlet
-temperatures other than 35\ :sup:`0`\ C and 55\ :sup:`0`\ C. The ideal
+temperatures other than 35°C and 55°C. The ideal
 COP is calculated for all the operating points, using the equation below
 (Note that the temperatures have to be in Kelvin scale).
 
@@ -130,8 +130,8 @@ equation below
 
 A second order polynomial equation has been fit to the pairs of the
 Carnot efficiencies and the corresponding temperature lifts, of
-operating points with condenser outlet temperatures 35\ :sup:`0`\ C and
-55\ :sup:`0`\ C, as shown in figure below.
+operating points with condenser outlet temperatures 35°C and
+55°C, as shown in figure below.
 
 .. figure:: ../images/advanced_7.png
    :alt: Carnot efficiency/COP vs Temperature Lift plot for the chosen
