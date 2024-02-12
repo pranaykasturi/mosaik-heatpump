@@ -49,7 +49,7 @@ Space heating demand
 --------------------
 
 The controller is initialized with the set points for the space heating
-(SH) supply temperature (*T_hr_sp_sh*) and for the temperature
+(SH) supply temperature (*T_hr_sp_sh*) and the temperature
 difference in the space heating circuit (*sh_dT*). For each time step of
 the simulation, the controller receives the space heating demand
 (*sh_demand*), in kW, the temperature of the water available for supply
