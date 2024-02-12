@@ -179,10 +179,15 @@ of the model for the nominal operating point. As the power consumption of the
 compressor is dependent on the isentropic efficiency, which is set as a
 parameter in the compressor, it is changed for each point in order to match
 the power consumption calculated by the model and that in the table. The
-isentropic efficiency values are restricted to the range of 0.25 - 0.95.
-In the instances when the power values cannot be matched even at the
-extreme values, they are assumed despite the difference in power
-predicted by the model and that in the table. The compressor isentropic
+isentropic efficiency values are restricted to the range of 0.3 - 0.95.
+
+.. note::
+
+    In the instances when the power values cannot be matched even at the extreme
+    values for the compressor isentropic efficiency, the extreme values are assumed
+    despite the difference in power predicted by the model and that in the table.
+
+The compressor isentropic
 efficiency map generated as described is summarized in table below.
 
 .. _compressor_efficiency_table:
