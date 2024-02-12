@@ -98,7 +98,8 @@ The power consumption changes with both the source air temperature and
 the condenser outlet temperature. An approach based on Carnot efficiency
 has been used to predict the power consumption at the condenser outlet
 temperatures other than 35\ :sup:`0`\ C and 55\ :sup:`0`\ C. The ideal
-COP is calculated for all the operating points, using the equation below.
+COP is calculated for all the operating points, using the equation below
+(Note that the temperatures have to be in Kelvin scale).
 
 .. figure:: ../images/advanced_4.png
    :alt: Equation for ideal COP
